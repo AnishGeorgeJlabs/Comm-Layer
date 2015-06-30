@@ -61,6 +61,7 @@ def load_data(event):
 
         return (True, payloadArr)
     except Exception:
+        raise
         return (False, None, None)
     finally:
         pass
