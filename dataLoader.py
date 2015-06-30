@@ -63,7 +63,9 @@ def updateAction(id,action):
     for x in val:
         if id is x['ID']:
             rowNum = val.index(x) + 2
-            worksheet.update_acell('I'+str(rowNum), str(action))
+            column = 'I'+str(rowNum)
+            print column
+            worksheet.update_acell(column, str(action))
 
 
 
@@ -82,7 +84,7 @@ def load_data(event):
             payload = {}
             if d[1].strip() in "Arabic":
                 message_text = sms_dict['ar']
-                payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "OL"}
+                payload = {'message': str_to_hex(message_text),'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "OL"}
             elif d[1].strip() in "English":
                 message_text = sms_dict['en']
                 payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "N"}
