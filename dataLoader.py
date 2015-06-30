@@ -11,6 +11,7 @@ import pymysql
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc"
+    "other" : "select distinct phone,if(language_code='en','English','Arabic') from promotion_subscription WHERE promotion_type LIKE %s"
 }
 
 # ------------ Helper functions ------------------
@@ -31,25 +32,20 @@ def getUserData(campaign):
         cu.execute(QUERRY['all'])
         for x in cu:
             data.append(x)
+    else:
+        cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
+        cu = cx.cursor()
+        cu.execute(QUERRY['other'],campaign)
+        for x in cu:
+            data.append(x)
     return data
 #--------------------------------------------------
 # --------------------- Main method ------------------------
 def load_data(event):
     try:
-        campaign = event['campaign']
-        CONTENTURL = config['content_url']
-        contentfile = "con" + str(datetime.datetime.now().strftime("%Y-%m-%d")) + ".zip"
-        r = requests.get(CONTENTURL)
-        if r.status_code is 200:
-            f = open(contentfile,"wb")
-            f.write(r.content)
-            f.close()
-        zf = zipfile.ZipFile(contentfile)
-        data = zf.read("Sheet1.html")
-        soup = BeautifulSoup(data,"html5lib")
-        td = soup.findAll("td")
-        en = td[2].text.strip()
-        ar = td[3].text.strip()
+        campaign = event['Campaign']
+        ar = event['Arabic']
+        en = event['English']
         sms_dict = {'ar':ar,'en':en}
         payloadArr = []
         data = getUserData(campaign)
@@ -57,10 +53,10 @@ def load_data(event):
             payload = {}
             if d[1].strip() in "Arabic":
                 message_text = sms_dict['ar']
-                payload = {'message': str_to_hex(message_text),'mobilenumber':d[0].strip("=").strip(), 'mtype': "OL"}
+                payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip(), 'mtype': "OL"}
             elif d[1].strip() in "English":
                 message_text = sms_dict['en']
-                payload = {'message': str_to_hex(message_text),'mobilenumber':d[0].strip("=").strip(), 'mtype': "N"}
+                payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip(), 'mtype': "N"}
             payloadArr.append(payload)
 
         return (True, payloadArr)
@@ -70,7 +66,7 @@ def load_data(event):
         pass
 # -----------------------------------------------------------
 if __name__ == '__main__':
-    event = {"campaign":"all"}
+    event = {"Campaign":"midnight_campaign","English":"hahahaha","Arabic":"SubhanAllah"}
     a,b =  load_data(event)
     print a
-    print len(b)
+    print b[9]
