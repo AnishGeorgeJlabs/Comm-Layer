@@ -1,11 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 # This module does the data downloading part from the csv
-import csv
-import requests
 import datetime
-import zipfile
-from bs4 import BeautifulSoup
 from config import config
 import pymysql
 import httplib2
