@@ -33,7 +33,7 @@ def getUserData(campaign):
         for x in cu:
             data.append(x)
     else:
-        cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
+        cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
         cu = cx.cursor()
         cu.execute(QUERRY['other'],campaign)
         for x in cu:
@@ -62,7 +62,7 @@ def load_data(event):
         return (True, payloadArr)
     except Exception:
         raise
-        return (False, None, None)
+        return (False, None)
     finally:
         pass
 # -----------------------------------------------------------
