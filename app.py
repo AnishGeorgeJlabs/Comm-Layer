@@ -4,11 +4,11 @@ import json
 import pika
 from config import config
 
-def watcher():
+def watcher(sender, event):
     print "Debug: Watcher started ..."
     try:
         ## Full code for main parent
-        res, payloadArr = load_data()
+        res, payloadArr = load_data(event)
         if not res:
           raise Exception
 
