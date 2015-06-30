@@ -10,7 +10,7 @@ from config import config
 import pymysql
 
 QUERRY = {
-    "all" : "select distinct b.number,a.fk_language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc"
+    "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc"
 }
 
 # ------------ Helper functions ------------------
