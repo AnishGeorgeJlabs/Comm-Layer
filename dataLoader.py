@@ -26,7 +26,7 @@ def str_to_hex(text):
 def getUserData(campaign):
     data = []
     if campaign.lower() in "all":
-        cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live')
+        cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
         cu = cx.cursor()
         cu.execute(QUERRY['all'])
         for x in cu:
