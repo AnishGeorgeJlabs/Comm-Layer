@@ -33,6 +33,8 @@ def getUserData(campaign):
         cu.execute(QUERRY['all'])
         for x in cu:
             data.append(x)
+    elif campaign.lower() in "testing":
+        data = [["917838310825","English"],["919818261929","Arabic"]]
     else:
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
         cu = cx.cursor()
@@ -90,7 +92,7 @@ def load_data(event):
         pass
 # -----------------------------------------------------------
 if __name__ == '__main__':
-    event = {"Campaign":"midnight_campaign","English":"hahahaha","Arabic":"SubhanAllah"}
+    event = {"Campaign":"testing","English":"hahahaha","Arabic":"SubhanAllah"}
     a,b =  load_data(event)
     print a
     print b[9]
