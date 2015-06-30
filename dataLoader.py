@@ -65,11 +65,13 @@ def load_data(event):
 
         return (True, payloadArr)
     except Exception:
+        raise
         return (False, None, None)
     finally:
         pass
 # -----------------------------------------------------------
 if __name__ == '__main__':
-   a,b =  load_data({"campaign":"all"})
-   print a
-   print len(b)
+    event = {"campaign":"all"}
+    a,b,c =  load_data(event)
+    print a
+    #print len(b)
