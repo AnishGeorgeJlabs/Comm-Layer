@@ -68,6 +68,8 @@ def updateAction(id,action):
 # --------------------- Main method ------------------------
 def load_data(event):
     try:
+        print "Inside Data loader"
+        print "Event: ", str(event)
         campaign = event['Campaign']
         ar = event['Arabic']
         en = event['English']

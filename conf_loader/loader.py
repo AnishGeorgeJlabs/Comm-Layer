@@ -2,7 +2,7 @@ from config import get_worksheet, config
 import pika
 import json
 
-worksheet = get_worksheet().get_all_record()
+worksheet = get_worksheet().get_all_records()
 print "Got worksheet", str(worksheet)
 
 # ---------- Rabbit ----------- #
