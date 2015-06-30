@@ -28,6 +28,7 @@ def watcher(sender, event):
         # -------------------------------------- #
         return True
     except Exception:
+        raise
         return False
     finally:
         pass     # cleanup

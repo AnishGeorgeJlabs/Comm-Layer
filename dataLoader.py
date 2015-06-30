@@ -26,6 +26,7 @@ def str_to_hex(text):
 #-----------------Get Campaign Data---------------
 
 def getUserData(campaign):
+    print "inside getUserData"
     data = []
     if campaign.lower() in "all":
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
@@ -46,6 +47,7 @@ def getUserData(campaign):
 
 #------------------Update Action-------------------
 def updateAction(id,action):
+    print "inside updateAction"
     storage = Storage("creds.dat")
     credentials = storage.get()
     if credentials is None or credentials.invalid:
@@ -59,7 +61,7 @@ def updateAction(id,action):
     worksheet = wks.get_worksheet(1)
     val = worksheet.get_all_records()
     for x in val:
-        if id in x['ID']:
+        if id is x['ID']:
             rowNum = val.index(x) + 2
             worksheet.update_acell('I'+str(rowNum), str(action))
 
@@ -69,7 +71,7 @@ def updateAction(id,action):
 def load_data(event):
     try:
         print "Inside Data loader"
-        print "Event: ", str(event)
+       #print "Event: ", str(event)
         campaign = event['Campaign']
         ar = event['Arabic']
         en = event['English']
@@ -88,6 +90,7 @@ def load_data(event):
 
         return (True, payloadArr)
     except Exception:
+        raise
         return (False, None)
     finally:
         updateAction(event['ID'],event['Action'])

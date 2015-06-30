@@ -22,6 +22,7 @@ _format = "%m/%d/%Y %H:%M:%S"
 
 
 def register(handler):
+    print "watchjob.register"
     dispatcher.connect(handler, signal=SIG, sender=dispatcher.Any)
 
 
@@ -32,6 +33,7 @@ class WatchJob(object):
     global _format
 
     def __init__(self, conf):
+        print "Created WatchJob"
         self.conf = conf
         self.triggerObj = {
             'Campaign': self.conf['Campaign'], 
@@ -61,11 +63,12 @@ class WatchJob(object):
         elif self.conf['Repeat'] == 'Daily': # Daily
             self.trigger = CronTrigger(hour=self.conf['Hour'], minute=self.conf['Minute'])
         else:
-            self.trigger = CronTrigger(second='*/5')
+            print "Correct repeat"
+            self.trigger = CronTrigger(second='*/15')
         
         ## setting the delay
         if self.conf['Repeat'] != 'Once':
-            if sDate.date() > date.today():
+            if self.conf['Repeat'] != 'Test' and sDate.date() > date.today():
                 scheduler.add_job(self._schedule,'date', run_date=sDate)
             else:
                 scheduler.add_job(self._schedule,'date', run_date=datetime.now())
@@ -76,7 +79,7 @@ class WatchJob(object):
         self.job = scheduler.add_job(self._emit, self.trigger)
 
     def _emit(self):
-        #print "emitting"
+        print "emitting ", self.conf['ID']
         if self.conf['Repeat'] == "Once":
             self.triggerObj.update({"Action": "Done"})
         else:
@@ -85,7 +88,7 @@ class WatchJob(object):
         dispatcher.send(signal=SIG, event=self.triggerObj, sender=self)
 
     def cancelJob(self):
-        #print "Remove called"
+        print "Remove called"
         if hasattr(self, 'job'):
             self.job.remove()
 

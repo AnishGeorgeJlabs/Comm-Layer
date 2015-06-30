@@ -21,6 +21,7 @@ csv object
 import watchjob
 
 def register(handler):
+    print "jobscheduler.register"
     watchjob.register(handler)
 
 update = {}
@@ -34,11 +35,13 @@ _cid = 0
 """ Add a single Job
 Returns the id """
 def _addJob (conf):
+    print "Inside addJob"
     global _currentJobs
     global _newJobs
     global _cid 
 
     if conf['ID'] == "":
+        print " case A"
         conf['ID'] = str(_cid)
         _cid += 1
         
@@ -46,21 +49,26 @@ def _addJob (conf):
         return conf['ID']
 
     elif conf['Action'].strip() == "" and _currentJobs.has_key(conf['ID']):
+            print " case B"
             # restart job
             _currentJobs[conf['ID']].cancelJob()        # Cancel the job
             _newJobs[conf['ID']] = watchjob.WatchJob(conf)
             return None
     elif not _currentJobs.has_key(conf['ID']):           # Event of a crash
+            print " case C"
             _newJobs[conf['ID']] = watchjob.WatchJob(conf)
             return None
     elif _currentJobs.has_key(conf['ID']):               # same, transfere
+            print " case D"
             _newJobs[conf['ID']] = _currentJobs.pop(conf['ID'])
             return None
     else:   # Dont think we will reach this
+            print " case FUCKED"
             return None
 
 """ Actual method to use """
 def configure_jobs (csvlist):
+    print "inside configure_jobs"
     global _currentJobs
     global _newJobs
     for i, conf in enumerate(csvlist):
