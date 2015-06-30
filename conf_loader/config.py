@@ -22,4 +22,8 @@ def get_worksheet():
     gc = gspread.authorize(credentials)
 
     wks = gc.open_by_key('144fuYSOgi8md4n2Ezoj9yNMi6AigoXrkHA9rWIF0EDw')
-    return wks.get_worksheet(1).get_all_records()
+    return wks.get_worksheet(1)
+
+def updateId(row, id):
+    cell = 'J'+str(row + 2)
+    get_worksheet().update_acell(cell, id)
