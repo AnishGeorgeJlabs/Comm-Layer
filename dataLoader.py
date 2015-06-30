@@ -37,7 +37,6 @@ def getUserData(campaign):
 def load_data(event):
     try:
         campaign = event['campaign']
-        data = getUserData(campaign)
         CONTENTURL = config['content_url']
         contentfile = "con" + str(datetime.datetime.now().strftime("%Y-%m-%d")) + ".zip"
         r = requests.get(CONTENTURL)
@@ -53,7 +52,7 @@ def load_data(event):
         ar = td[3].text.strip()
         sms_dict = {'ar':ar,'en':en}
         payloadArr = []
-        print data[0]
+        data = getUserData(campaign)
         for d in data:
             payload = {}
             if d[1].strip() in "Arabic":
