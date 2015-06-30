@@ -53,7 +53,6 @@ def load_data(event):
         sms_dict = {'ar':ar,'en':en}
         payloadArr = []
         data = getUserData(campaign)
-        print data[0]
         for d in data:
             payload = {}
             if d[1].strip() in "Arabic":
