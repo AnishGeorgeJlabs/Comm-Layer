@@ -23,6 +23,10 @@ import watchjob
 def register(handler):
     watchjob.register(handler)
 
+update = {}
+def updateFunc(func):
+    update['func'] = func
+
 _currentJobs = {}
 _newJobs = {}
 _cid = 0
@@ -45,7 +49,7 @@ def _addJob (conf):
             # restart job
             _currentJobs[conf['ID']].cancelJob()        # Cancel the job
             _newJobs[conf['ID']] = watchjob.WatchJob(conf)
-            return conf['ID']
+            return None
     elif not _currentJobs.has_key(conf['ID']):           # Event of a crash
             _newJobs[conf['ID']] = watchjob.WatchJob(conf)
             return None
@@ -59,10 +63,10 @@ def _addJob (conf):
 def configure_jobs (csvlist):
     global _currentJobs
     global _newJobs
-    for conf in csvlist:
+    for i, conf in enumerate(csvlist):
         res = _addJob (conf)
         if res is not None:
-            print "update: "+res
+            update['func'](i, res)
 
     print "Remaining ", _currentJobs
     for k, remaining in _currentJobs.iteritems():

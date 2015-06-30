@@ -14,11 +14,12 @@ while True:
 
 from scheduler import jobscheduler
 from app import watcher
-from conf_loader.config import config
+from conf_loader.config import config, updateId
 import pika
 import json
 
 jobscheduler.register(watcher)
+jobscheduler.updateFunc(updateId)
 
 # ------- Rabbit MQ --------- #
 connection = pika.BlockingConnection(pika.ConnectionParameters(
