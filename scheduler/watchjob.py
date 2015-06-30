@@ -65,7 +65,9 @@ class WatchJob(object):
         else:
             print "Correct repeat"
             self.trigger = CronTrigger(second='*/15')
-        
+
+        print self.trigger
+        print "curent", str(datetime.now().time())
         ## setting the delay
         if self.conf['Repeat'] != 'Once':
             if self.conf['Repeat'] != 'Test' and sDate.date() > date.today():

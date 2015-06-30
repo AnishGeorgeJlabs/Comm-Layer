@@ -14,10 +14,13 @@ def sendSms(payload):
         request = urllib2.Request(url, data)
         print "Got payload: ", payload
         wp = urllib2.urlopen(request)
+        print wp.read()
         return True
     except AssertionError:
+        raise
         return True
     except Exception:
+        raise
         return False
 
 
@@ -30,9 +33,10 @@ if __name__ == "__main__":
 
     def callback(ch, method, properties, body):
         payload = json.loads(body)
-        i = 1
-        while sendSms(payload) or i > 0:       # 2 tries
-            i -= 1
+        sendSms(payload)
+        #i = 1
+        #while not sendSms(payload) and i > 0:       # 2 tries
+        #    i -= 1
         ch.basic_ack(delivery_tag = method.delivery_tag)
 
     channel.basic_qos(prefetch_count=1)
