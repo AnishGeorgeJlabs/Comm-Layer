@@ -57,7 +57,7 @@ class WatchJob(object):
         if self.conf['Repeat'] == 'Once':
             self.trigger = DateTrigger(fDate)
         elif self.conf['Repeat'] == 'Hourly':
-            self.trigger = CronTrigger(hour='*/'+self.conf['Hour'], minute=self.conf['Minute'])
+            self.trigger = CronTrigger(hour='*/'+str(self.conf['Hour']), minute=str(self.conf['Minute']))
         elif self.conf['Repeat'] == 'Daily': # Daily
             self.trigger = CronTrigger(hour=self.conf['Hour'], minute=self.conf['Minute'])
         else:
