@@ -53,6 +53,7 @@ def load_data(event):
         ar = td[3].text.strip()
         sms_dict = {'ar':ar,'en':en}
         payloadArr = []
+        print data[0]
         for d in data:
             payload = {}
             if d[1].strip() in "Arabic":
