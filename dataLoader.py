@@ -32,7 +32,7 @@ def getUserData(campaign):
         for x in cu:
             data.append(x)
     return data
-
+#--------------------------------------------------
 # --------------------- Main method ------------------------
 def load_data(event):
     try:
@@ -69,3 +69,7 @@ def load_data(event):
     finally:
         pass
 # -----------------------------------------------------------
+if __name__ == '__main__':
+   a,b =  load_data({"campaign":"all"})
+   print a
+   print len(b)
