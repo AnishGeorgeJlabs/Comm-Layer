@@ -7,7 +7,7 @@ from config import config
 def sendSms(payload):
     try:
         assert {'message', 'cell_phone'} & payload.viewkeys(), "Invalid Data Packet"
-        values = {'user' : 'wadiops', 'passwd' : 'w@d1Rock$', 'DR':'Y'}
+        values = {'user' : 'wadiops', 'passwd' : 'w@d1Rock$', 'DR':'Y','Sid':'Jlabs'}
         values.update(payload)
         url = config['sms_post_url']
         data = urllib.urlencode(values)
