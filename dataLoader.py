@@ -63,7 +63,9 @@ def updateAction(id,action):
     for x in val:
         if id is x['ID']:
             rowNum = val.index(x) + 2
-            worksheet.update_acell('I'+str(rowNum), str(action))
+            column = 'I'+str(rowNum)
+            print column
+            worksheet.update_acell(column, str(action))
 
 
 
