@@ -84,7 +84,7 @@ def load_data(event):
             payload = {}
             if d[1].strip() in "Arabic":
                 message_text = sms_dict['ar']
-                payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "OL"}
+                payload = {'message': str_to_hex(message_text),'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "OL"}
             elif d[1].strip() in "English":
                 message_text = sms_dict['en']
                 payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "N"}
