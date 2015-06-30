@@ -8,6 +8,11 @@ import zipfile
 from bs4 import BeautifulSoup
 from config import config
 import pymysql
+import httplib2
+from oauth2client.file import Storage
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client import tools
+import gspread
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
@@ -40,6 +45,28 @@ def getUserData(campaign):
             data.append(x)
     return data
 #--------------------------------------------------
+
+#------------------Update Action-------------------
+def updateAction(id,action):
+    storage = Storage("creds.dat")
+    credentials = storage.get()
+    if credentials is None or credentials.invalid:
+        flags = tools.argparser.parse_args(args=[])
+        flow = flow_from_clientsecrets("client_secret.json", scope=["https://spreadsheets.google.com/feeds"])
+        credentials = tools.run_flow(flow, storage, flags)
+    if credentials.access_token_expired:
+        credentials.refresh(httplib2.Http())
+    gc = gspread.authorize(credentials)
+    wks = gc.open_by_key('144fuYSOgi8md4n2Ezoj9yNMi6AigoXrkHA9rWIF0EDw')
+    worksheet = wks.get_worksheet(1)
+    val = worksheet.get_all_records()
+    for x in val:
+        if id in x['ID']:
+            rowNum = val.index(x) + 2
+            worksheet.update_acell('I'+str(rowNum), str(action))
+
+
+
 # --------------------- Main method ------------------------
 def load_data(event):
     try:
@@ -61,9 +88,9 @@ def load_data(event):
 
         return (True, payloadArr)
     except Exception:
-        raise
         return (False, None)
     finally:
+        updateAction(event['ID'],event['Action'])
         pass
 # -----------------------------------------------------------
 if __name__ == '__main__':
