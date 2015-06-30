@@ -74,4 +74,4 @@ if __name__ == '__main__':
     event = {"campaign":"all"}
     a,b =  load_data(event)
     print a
-    #print len(b)
+    print len(b)
