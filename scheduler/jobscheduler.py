@@ -44,7 +44,7 @@ def _addJob (conf):
     global _newJobs
     global _cid 
 
-    if conf['ID'].strip() == "":
+    if str(conf['ID']).strip() == "":
         print " c1. No ID, new one"
         conf['ID'] = str(_cid)
         _cid += 1
@@ -78,8 +78,8 @@ def configure_jobs(csvlist):
     for i, conf in enumerate(csvlist):
         res = _addJob (conf)
         if res is not None:
-            external['update_id'](res, i)
-            external['update_action'](res, 'Registered')
+            external['update_id'](res, i, 'Registered')
+            #external['update_action'](res, 'Registered')
 
     #print "Remaining ", _currentJobs
     for k, remaining in _currentJobs.iteritems():

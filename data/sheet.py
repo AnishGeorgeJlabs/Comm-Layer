@@ -23,12 +23,16 @@ def get_worksheet(i):
 def get_scheduler_sheet():
     return get_worksheet(1)
 
-def updateId(id, row):
+def updateId(id, row, *arg):
+    print 'inside updateId, ', id, row
     cell = 'J'+str(row + 2)
-    get_scheduler_sheet().update_acell(cell, id)
+    worksheet = get_scheduler_sheet()
+    worksheet.update_acell(cell, id)
+    if len(arg) > 0:
+        worksheet.update_acell('I'+str(row+2), arg[0])
 
 def updateAction(id, action):
-    print 'inside updateAction'
+    print 'inside updateAction, ', id, action
     worksheet = get_scheduler_sheet()
     val = worksheet.get_all_records()
     for x in val:
