@@ -13,8 +13,9 @@ while True:
 """
 
 from scheduler import jobscheduler
-from app import watcher
-from conf_loader.config import config, updateId
+from data.handler import watcher
+from data.sheet import updateId
+from data.configuration import config
 import pika
 import json
 
@@ -22,10 +23,11 @@ jobscheduler.register(watcher)
 jobscheduler.updateFunc(updateId)
 
 # ------- Rabbit MQ --------- #
+# Waiting on the loader to send in the scheduling sheet #
 connection = pika.BlockingConnection(pika.ConnectionParameters(
     host='localhost'))
 channel = connection.channel()
-channel.queue_declare(queue=config['queue'])
+channel.queue_declare(queue=config['app_queue'])
 
 def callback(ch, method, properties, body):
     payload = json.loads(body)
@@ -34,7 +36,7 @@ def callback(ch, method, properties, body):
 
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(callback,
-                      queue=config['queue'])
+                      queue=config['app_queue'])
 print "Ready"
 channel.start_consuming()
 

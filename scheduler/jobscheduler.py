@@ -24,9 +24,13 @@ def register(handler):
     print "jobscheduler.register"
     watchjob.register(handler)
 
-update = {}
-def updateFunc(func):
-    update['func'] = func
+external = {}
+def set_id_update(func):
+    external['update_id'] = func            # (id, index) -> {}
+
+
+def set_action_update(func):
+    external['update_action'] = func        # (id, action) -> {}
 
 _currentJobs = {}
 _newJobs = {}
@@ -40,46 +44,46 @@ def _addJob (conf):
     global _newJobs
     global _cid 
 
-    if conf['ID'] == "":
-        print " case A"
+    if conf['ID'].strip() == "":
+        print " c1. No ID, new one"
         conf['ID'] = str(_cid)
         _cid += 1
         
         _newJobs[conf['ID']] = watchjob.WatchJob(conf)
         return conf['ID']
 
-    elif conf['Action'].strip() == "" and _currentJobs.has_key(conf['ID']):
-            print " case B"
+    elif conf['Action'].strip() == "" and conf['ID'] in _currentJobs:   #_currentJobs.has_key(conf['ID']):
+            print " c2. Cleared Action"
             # restart job
             _currentJobs[conf['ID']].cancelJob()        # Cancel the job
             _newJobs[conf['ID']] = watchjob.WatchJob(conf)
             return None
-    elif not _currentJobs.has_key(conf['ID']):           # Event of a crash
-            print " case C"
+    elif conf['ID'] not in _currentJobs:   #not _currentJobs.has_key(conf['ID']):           # Event of a crash
+            print " c3. App crash or tampering"
             _newJobs[conf['ID']] = watchjob.WatchJob(conf)
             return None
-    elif _currentJobs.has_key(conf['ID']):               # same, transfere
-            print " case D"
+    elif conf['ID'] in _currentJobs: #_currentJobs.has_key(conf['ID']):               # same, transfere
+            print " c4. Action not cleared, same job, ignore"
             _newJobs[conf['ID']] = _currentJobs.pop(conf['ID'])
             return None
     else:   # Dont think we will reach this
-            print " case FUCKED"
+            print " c5. case FUCKED"
             return None
 
 """ Actual method to use """
-def configure_jobs (csvlist):
-    print "inside configure_jobs"
+def configure_jobs(csvlist):
+    print " Configuring jobs"
     global _currentJobs
     global _newJobs
     for i, conf in enumerate(csvlist):
         res = _addJob (conf)
         if res is not None:
-            update['func'](i, res)
+            external['update_id'](res, i)
+            external['update_action'](res, 'Registered')
 
-    print "Remaining ", _currentJobs
+    #print "Remaining ", _currentJobs
     for k, remaining in _currentJobs.iteritems():
         remaining.cancelJob()
-    #del _currentJobs
     _currentJobs = _newJobs
     _newJobs = {}
 
@@ -114,7 +118,7 @@ _t1 = [
 ]
 _t2 = [
     {
-        "Campaign": "Test1",
+        "Campaign": "Test3",
         "Start Date": "6/30/2015",
         "Repeat": "Test",
         "Hour": '1',
@@ -123,13 +127,19 @@ _t2 = [
         "English": "Blu blue",
         "Type": "SMS",
 
-        "Action": "",
+        "Action": "Done",
         "ID": "0"
     }
 ]
 
+def _logPrint(i, id):
+    pass
+    # print "updating ", i, id
+
 def test1():
-    watchjob.register(watchjob.logFunc)
+    register(watchjob.logFunc)
+    set_id_update(_logPrint)
+    set_action_update(_logPrint)
     configure_jobs (_t1)
 
 def test2():
