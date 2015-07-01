@@ -1,12 +1,12 @@
-from pydispatch import dispatcher
-from time import sleep
-## main event scheduling system
+# main event scheduling system
 
 from pydispatch import dispatcher
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from datetime import datetime, time, date
+from time import sleep
+
 import logging
 logging.basicConfig()
 
@@ -19,45 +19,54 @@ SIG = 'WatchJob'
 _format = "%m/%d/%Y %H:%M:%S"
 #
 
-
-
 def register(handler):
-    print "watchjob.register"
+    print "Registering handler for WatchJob"
     dispatcher.connect(handler, signal=SIG, sender=dispatcher.Any)
 
 
 class WatchJob(object):
-    #global SIG
-    #global dispatcher
-    #global scheduler
+    # global SIG
+    # global dispatcher
+    # global scheduler
     global _format
 
     def __init__(self, conf):
         print "Created WatchJob"
         self.conf = conf
+        # Short date
+        self.sDate = datetime.strptime(self.conf['Start Date'], '%m/%d/%Y')
+
+        # Full Date
+        self.fDate = datetime.combine(
+            self.sDate.date(),
+            time(int(self.conf['Hour']), int(self.conf['Minute']))
+        )
+        self._set_trigger()
+        self._set_delay()
+
+    def _set_delay(self):
+        # TODO: have to set up crash recovery using last execute in action
+        if self.conf['Repeat'] != 'Once':
+            if self.conf['Repeat'] != 'Test' and self.sDate.date() > date.today():
+                scheduler.add_job(self._schedule, 'date', run_date=self.sDate)
+            else:
+                scheduler.add_job(self._schedule, 'date', run_date=datetime.now())
+
+    def _set_trigger(self):
         self.triggerObj = {
-            'Campaign': self.conf['Campaign'], 
+            'Campaign': self.conf['Campaign'],
             'ID': self.conf['ID'],
             'Type': self.conf['Type']
         }
-        if conf['Type'] == 'SMS':
+        if self.conf['Type'] == 'SMS':
             self.triggerObj.update({
                 'Arabic': self.conf['Arabic'],
                 'English': self.conf['English']
             })
-
         self.trigger = {}           # Actual trigger object for the apscheduler
 
-        sDate = datetime.strptime(self.conf['Start Date'], '%m/%d/%Y')      # Short date given in Start Date
-
-        fDate = datetime.combine(                                           # Full implied date
-            sDate.date(),
-            time(int(self.conf['Hour']), int(self.conf['Minute']))
-        )
-
-        ## setting up the trigger
         if self.conf['Repeat'] == 'Once':
-            self.trigger = DateTrigger(fDate)
+            self.trigger = DateTrigger(self.fDate)
         elif self.conf['Repeat'] == 'Hourly':
             self.trigger = CronTrigger(hour='*/'+str(self.conf['Hour']), minute=str(self.conf['Minute']))
         elif self.conf['Repeat'] == 'Daily': # Daily
@@ -66,15 +75,9 @@ class WatchJob(object):
             print "Correct repeat"
             self.trigger = CronTrigger(second='*/15')
 
-        print self.trigger
+        # DEBUG
+        print "Created trigger", self.trigger
         print "curent", str(datetime.now().time())
-        ## setting the delay
-        if self.conf['Repeat'] != 'Once':
-            if self.conf['Repeat'] != 'Test' and sDate.date() > date.today():
-                scheduler.add_job(self._schedule,'date', run_date=sDate)
-            else:
-                scheduler.add_job(self._schedule,'date', run_date=datetime.now())
-        # TODO: have to set up crash recovery using last execute in action
 
     def _schedule(self):
         print "executing _schedule"
@@ -90,7 +93,7 @@ class WatchJob(object):
         dispatcher.send(signal=SIG, event=self.triggerObj, sender=self)
 
     def cancelJob(self):
-        print "Remove called"
+        print "Remove called for campaign ", self.conf['Campaign']
         if hasattr(self, 'job'):
             self.job.remove()
 
@@ -102,7 +105,7 @@ def logFunc(sender, event):
 
 if __name__ == "__main__":
     register(logFunc)
-    #dispatcher.connect(logFunc, signal=SIG, sender=dispatcher.Any)
+    # dispatcher.connect(logFunc, signal=SIG, sender=dispatcher.Any)
     wj = WatchJob({
         'Campaign': 'TestCampaign',
         'Type': 'SMS',
@@ -116,11 +119,10 @@ if __name__ == "__main__":
         'Action': ''
     })
 
-    
     while True:
         sleep(1)
     #for i in range(10):
     #    sleep(1)
 
-    #del wj
+    wj.cancelJob()
     print "DONE"
