@@ -14,13 +14,14 @@ while True:
 
 from scheduler import jobscheduler
 from data.handler import watcher
-from data.sheet import updateId
+from data.sheet import updateId, updateAction
 from data.configuration import config
 import pika
 import json
 
 jobscheduler.register(watcher)
-jobscheduler.updateFunc(updateId)
+jobscheduler.set_id_update(updateId)
+jobscheduler.set_action_update(updateAction)
 
 # ------- Rabbit MQ --------- #
 # Waiting on the loader to send in the scheduling sheet #

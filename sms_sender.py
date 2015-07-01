@@ -41,6 +41,7 @@ if __name__ == "__main__":
 
     channel.basic_qos(prefetch_count=1)
     channel.basic_consume(callback,
-                          queue=config['smsqueue'])
+                          queue=config['sms_queue'])
 
     channel.start_consuming()
+    print "Ready"

@@ -1,13 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 # This module does the data downloading part from the csv
-import datetime
 import pymysql
-import httplib2
-from oauth2client.file import Storage
-from oauth2client.client import flow_from_clientsecrets
-from oauth2client import tools
-import gspread
 from sheet import updateAction
 
 QUERRY = {
