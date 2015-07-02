@@ -57,7 +57,7 @@ def _addJob (conf):
             # restart job
             _currentJobs[conf['ID']].cancelJob()        # Cancel the job
             _newJobs[conf['ID']] = watchjob.WatchJob(conf)
-            return None
+            return conf['ID']
     elif conf['ID'] not in _currentJobs:   #not _currentJobs.has_key(conf['ID']):           # Event of a crash
             print " c3. App crash or tampering"
             _newJobs[conf['ID']] = watchjob.WatchJob(conf)
@@ -76,6 +76,8 @@ def configure_jobs(csvlist):
     global _currentJobs
     global _newJobs
     for i, conf in enumerate(csvlist):
+        if conf['Action'] == 'Done':
+            continue
         res = _addJob (conf)
         if res is not None:
             external['update_id'](res, i, 'Registered')
