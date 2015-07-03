@@ -35,7 +35,7 @@ def updateAction(id, action):
     worksheet = get_scheduler_sheet()
     val = worksheet.get_all_records()
     for x in val:
-        print x['ID']
+        print x['ID'],id
         if id is x['ID']:
 
             rowNum = val.index(x) + 2
