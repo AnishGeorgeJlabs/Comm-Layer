@@ -82,7 +82,8 @@ def configure_jobs(csvlist):
     global _idList
     if csvlist:
         for conf in csvlist:
-            _idList.append(int(conf['ID']))
+            if conf['ID'] != "":
+                _idList.append(int(conf['ID']))
         for i, conf in enumerate(csvlist):
             if conf['Action'] == 'Done':
                 continue
