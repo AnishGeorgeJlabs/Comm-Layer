@@ -42,5 +42,5 @@ def updateAction(id, action):
                 column = 'I'+str(rowNum)
                 print column
                 worksheet.update_acell(column, str(action))
-        except Exception e:
-            print "Some error came" , e
+        except:
+            print "Some error came"
