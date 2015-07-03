@@ -6,9 +6,16 @@ import json
 worksheet = get_scheduler_sheet().get_all_records()
 #print "Got worksheet", str(worksheet)
 
+def checkRow(row):
+    mandatory = ['Repeat', 'Type', 'Campaign', 'Start Date', 'Hour', 'Minute', 'English', 'Arabic']
+    for key in mandatory:
+        if row[key] == '':
+            return False
+
+    return True
+
 check = all(
-    all(val != '' for val in record.values())
-    for record in worksheet
+    checkRow(row) for row in worksheet
 )
 
 # ---------- Rabbit ----------- #
