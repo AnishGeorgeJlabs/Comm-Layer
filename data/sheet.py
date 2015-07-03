@@ -21,7 +21,7 @@ def get_worksheet(i):
     return wks.get_worksheet(i)
 
 def get_scheduler_sheet():
-    return get_worksheet(1)
+    return get_worksheet(0)
 
 def updateId(id, row, *arg):
     print 'inside updateId, ', id, row
