@@ -35,9 +35,7 @@ def updateAction(id, action):
     worksheet = get_scheduler_sheet()
     val = worksheet.get_all_records()
     for x in val:
-        print x['ID'],id
-        if id is x['ID']:
-
+        if id == x['ID']:
             rowNum = val.index(x) + 2
             column = 'I'+str(rowNum)
             print column
