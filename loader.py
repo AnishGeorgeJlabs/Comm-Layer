@@ -4,19 +4,27 @@ import pika
 import json
 
 worksheet = get_scheduler_sheet().get_all_records()
-print "Got worksheet", str(worksheet)
+#print "Got worksheet", str(worksheet)
+
+check = all(
+    all(val != '' for val in record.values())
+    for record in worksheet
+)
 
 # ---------- Rabbit ----------- #
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters('localhost'))
-channel = connection.channel()
-channel.queue_declare(queue=config['app_queue'])
+if check:
+    print "publishing records: ", len(worksheet)
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue=config['app_queue'])
 
-channel.basic_publish(
-    exchange='',
-    routing_key=config['app_queue'],
-    body=json.dumps(worksheet)
-)
-print "publishing"
+    channel.basic_publish(
+        exchange='',
+        routing_key=config['app_queue'],
+        body=json.dumps(worksheet)
+    )
+else:
+    print "invalid data, exiting"
 ## Send message on rabbit Q
 #worksheet.update_acell('F2', 'Done')
