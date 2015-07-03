@@ -35,8 +35,12 @@ def updateAction(id, action):
     worksheet = get_scheduler_sheet()
     val = worksheet.get_all_records()
     for x in val:
-        if id == x['ID']:
-            rowNum = val.index(x) + 2
-            column = 'I'+str(rowNum)
-            print column
-            worksheet.update_acell(column, str(action))
+        try:
+            if id == x['ID']:
+                print "IF ke andar aa gaya"
+                rowNum = val.index(x) + 2
+                column = 'I'+str(rowNum)
+                print column
+                worksheet.update_acell(column, str(action))
+        except Exception e:
+            print "Some error came" , e
