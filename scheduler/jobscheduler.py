@@ -32,6 +32,7 @@ def set_id_update(func):
 def set_action_update(func):
     external['update_action'] = func        # (id, action) -> {}
 
+_idList = []
 _currentJobs = {}
 _newJobs = {}
 _cid = 0
@@ -42,10 +43,13 @@ def _addJob (conf):
     print "Inside addJob"
     global _currentJobs
     global _newJobs
-    global _cid 
+    global _cid
+    global _idList
 
     if str(conf['ID']).strip() == "":
         print " c1. No ID, new one"
+        while _cid in _idList:
+            _cid += 1
         conf['ID'] = str(_cid)
         _cid += 1
         
@@ -75,19 +79,25 @@ def configure_jobs(csvlist):
     print " Configuring jobs"
     global _currentJobs
     global _newJobs
-    for i, conf in enumerate(csvlist):
-        if conf['Action'] == 'Done':
-            continue
-        res = _addJob (conf)
-        if res is not None:
-            external['update_id'](res, i, 'Registered')
-            #external['update_action'](res, 'Registered')
+    global _idList
+    if csvlist:
+        for conf in csvlist:
+            _idList.append(int(conf['ID']))
+        for i, conf in enumerate(csvlist):
+            if conf['Action'] == 'Done':
+                continue
+            res = _addJob (conf)
+            if res is not None:
+                external['update_id'](res, i, 'Registered')
+                #external['update_action'](res, 'Registered')
 
-    #print "Remaining ", _currentJobs
-    for k, remaining in _currentJobs.iteritems():
-        remaining.cancelJob()
-    _currentJobs = _newJobs
-    _newJobs = {}
+        #print "Remaining ", _currentJobs
+        for k, remaining in _currentJobs.iteritems():
+            remaining.cancelJob()
+        _currentJobs = _newJobs
+        _newJobs = {}
+    else:
+        _currentJobs = {}
 
 
 _t1 = [
