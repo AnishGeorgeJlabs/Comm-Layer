@@ -29,7 +29,7 @@ def getUserData(campaign):
         for x in cu:
             data.append(x)
     elif campaign.lower() in "testing":
-        data = [["919818261929","Arabic"],["917838310825","English"]]
+        data = [["919818261929","Arabic"],["917838310825","English"],["971559052361","Arabic"]]
     else:
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
         cu = cx.cursor()
