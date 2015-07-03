@@ -36,7 +36,7 @@ def updateAction(id, action):
     val = worksheet.get_all_records()
     for x in val:
         try:
-            if id == x['ID']:
+            if int(id) == int(x['ID']):
                 print "IF ke andar aa gaya"
                 rowNum = val.index(x) + 2
                 column = 'I'+str(rowNum)
