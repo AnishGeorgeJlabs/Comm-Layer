@@ -2,7 +2,7 @@
 
 # This module does the data downloading part from the csv
 import pymysql
-from sheet import updateAction, get_testing_sheet
+from sheet import updateAction, get_testing_sheet, get_custom_sheet
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
@@ -22,7 +22,7 @@ def str_to_hex(text):
 def getUserData(campaign):
     print "inside getUserData"
     data = []
-    if campaign.lower() in "all":
+    if campaign.lower() in "all":       # Actually, all in campaig.lower()
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
         cu = cx.cursor()
         cu.execute(QUERRY['all'])
@@ -31,6 +31,8 @@ def getUserData(campaign):
     elif campaign.lower() in "testing":
         # data = [["919818261929","Arabic"],["917838310825","English"],["971559052361","Arabic"]]
         data = get_testing_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
+    elif campaign.lower() in "custom":
+        data = get_custom_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
     else:
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
         cu = cx.cursor()
