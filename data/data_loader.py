@@ -2,7 +2,7 @@
 
 # This module does the data downloading part from the csv
 import pymysql
-from sheet import updateAction
+from sheet import updateAction, get_testing_sheet
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
@@ -29,7 +29,8 @@ def getUserData(campaign):
         for x in cu:
             data.append(x)
     elif campaign.lower() in "testing":
-        data = [["919818261929","Arabic"],["917838310825","English"],["971559052361","Arabic"]]
+        # data = [["919818261929","Arabic"],["917838310825","English"],["971559052361","Arabic"]]
+        data = get_testing_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
     else:
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
         cu = cx.cursor()
@@ -37,9 +38,9 @@ def getUserData(campaign):
         for x in cu:
             data.append(x)
     return data
-#--------------------------------------------------
+# --------------------------------------------------
 
-#------------------Update Action-------------------
+# ------------------Update Action-------------------
 # Has now been moved to sheet.py
 """
 def updateAction(id,action):
