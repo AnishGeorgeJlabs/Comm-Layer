@@ -3,6 +3,8 @@
 # This module does the data downloading part from the csv
 import pymysql
 from sheet import updateAction, get_testing_sheet, get_custom_sheet
+import pymongo
+mdb = pymongo.MongoClient("mongodb://45.55.232.5:27017").wadi
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
@@ -39,6 +41,9 @@ def getUserData(campaign):
         cu.execute(QUERRY['other'],campaign)
         for x in cu:
             data.append(x)
+    blocked_list = set([a['number']+','+a['language'] for a in mdb.blocked.find({}, {"_id": False})])
+    print "Blocked list: "+str(blocked_list)
+    data = [a for a in data if ','.join([a[0], a[1]]) not in blocked_list]
     return data
 # --------------------------------------------------
 
@@ -91,7 +96,6 @@ def load_data(event):
 
         return (True, payloadArr)
     except Exception:
-        raise
         return (False, None)
     finally:
         updateAction(event['ID'],event['Action'])
