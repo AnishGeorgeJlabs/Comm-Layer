@@ -19,7 +19,7 @@ def watcher(event):
         channel = connection.channel()
         channel.queue_declare(queue=config['sms_queue'])
 
-        print "array of payloads ", payloadArr
+        print "Payload array size", len(payloadArr)
         for payload in payloadArr:
           channel.basic_publish(exchange='',
                                 routing_key=config['sms_queue'],

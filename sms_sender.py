@@ -17,10 +17,9 @@ def sendSms(payload):
         print wp.read()
         return True
     except AssertionError:
-        raise
         return True
-    except Exception:
-        raise
+    except Exception, e:
+        print " >>> Error: "+str(e)
         return False
 
 

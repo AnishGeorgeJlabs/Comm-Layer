@@ -44,7 +44,6 @@ def getUserData(campaign):
         for x in cu:
             data.append(x)
     blocked_list = set([a['number']+','+a['language'] for a in mdb.blocked.find({}, {"_id": False})])
-    print "Blocked list: "+str(blocked_list)
     data = [a for a in data if ','.join([a[0], a[1]]) not in blocked_list]
     return data
 # --------------------------------------------------
