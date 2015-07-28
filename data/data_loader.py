@@ -8,6 +8,8 @@ mdb = pymongo.MongoClient("mongodb://45.55.232.5:27017").wadi
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
+    "all_uae" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer where a.fk_country = 3 order by a.id_customer desc",
+    "all_ksa" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer where a.fk_country = 193 order by a.id_customer desc",
     "other" : "select distinct phone,if(language_code='en','English','Arabic') from promotion_subscription WHERE promotion_type LIKE %s"
 }
 
@@ -24,10 +26,10 @@ def str_to_hex(text):
 def getUserData(campaign):
     print "inside getUserData"
     data = []
-    if campaign.lower() in "all":       # Actually, all in campaig.lower()
+    if campaign.lower().startswith("all"):       # Actually, all in campaig.lower()
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
         cu = cx.cursor()
-        cu.execute(QUERRY['all'])
+        cu.execute(QUERRY[campaign.lower()])
         for x in cu:
             data.append(x)
     elif campaign.lower() in "testing":

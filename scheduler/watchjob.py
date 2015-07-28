@@ -118,7 +118,7 @@ class WatchJob(object):
         elif self.conf['Repeat'] == 'Daily':  # Daily
             self.trigger = CronTrigger(hour=str(self.fDate.hour), minute=str(self.fDate.minute))
         else:
-            self.trigger = CronTrigger(second='*/15')
+            self.trigger = DateTrigger(self.fDate)
 
         # DEBUG
         print "Created trigger", self.trigger
