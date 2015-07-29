@@ -26,17 +26,20 @@ def str_to_hex(text):
 def getUserData(campaign):
     print "inside getUserData"
     data = []
-    if campaign.lower().startswith("all"):       # Actually, all in campaig.lower()
+    clo = campaign.lower()
+    if clo.startswith("all"):       # Actually, all in campaig.lower()
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
         cu = cx.cursor()
-        cu.execute(QUERRY[campaign.lower()])
+        cu.execute(QUERRY[clo])
         for x in cu:
             data.append(x)
-    elif campaign.lower() in "testing":
+    elif clo in "testing":
         # data = [["919818261929","Arabic"],["917838310825","English"],["971559052361","Arabic"]]
         data = get_testing_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
-    elif campaign.lower() in "custom":
+    elif clo in "custom":
         data = get_custom_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
+    elif clo.startswith("cust_"):
+        data = get_custom_sheet(clo).get_all_values()[1:]
     else:
         cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
         cu = cx.cursor()
