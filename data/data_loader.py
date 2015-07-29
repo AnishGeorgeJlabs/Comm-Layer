@@ -2,7 +2,7 @@
 
 # This module does the data downloading part from the csv
 import pymysql
-from sheet import updateAction, get_testing_sheet, get_custom_sheet
+from sheet import updateAction, get_testing_sheet, get_custom_sheet, get_block_sheet
 import pymongo
 mdb = pymongo.MongoClient("mongodb://45.55.232.5:27017").wadi
 
@@ -43,7 +43,7 @@ def getUserData(campaign):
         cu.execute(QUERRY['other'],campaign)
         for x in cu:
             data.append(x)
-    blocked_list = set([a['number']+','+a['language'] for a in mdb.blocked.find({}, {"_id": False})])
+    blocked_list = set([a[0]+','+a[1] for a in get_block_sheet().get_all_values()[1:]])
     data = [a for a in data if ','.join([a[0], a[1]]) not in blocked_list]
     return data
 # --------------------------------------------------
