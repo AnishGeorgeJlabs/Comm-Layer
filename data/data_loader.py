@@ -4,6 +4,7 @@
 import pymysql
 from sheet import updateAction, get_testing_sheet, get_custom_sheet, get_block_sheet
 import pymongo
+import string
 mdb = pymongo.MongoClient("mongodb://45.55.232.5:27017").wadi
 
 QUERRY = {
@@ -20,6 +21,15 @@ def str_to_hex(text):
     arabic_hex.append("000A")
     text_update = "".join(arabic_hex)
     return text_update
+
+def clean_english(text):
+    # Support for en and em dash which is a common english unicode
+    repText = ''.join(map(
+        lambda c: '-' if c == u'\u2013' or c == u'\u2014' else c,
+        text
+    ))
+    filtered_txt = str(filter(lambda k: k in string.printable , repText))
+    return filtered_txt
 # ------------------------------------------------
 #-----------------Get Campaign Data---------------
 
@@ -85,24 +95,32 @@ def load_data(event):
         campaign = event['Campaign']
         ar = event['Arabic']
         en = event['English']
-        sms_dict = {'ar':ar,'en':en}
+        sms_dict = {'ar': str_to_hex(ar), 'en': clean_english(en) }
         payloadArr = []
         data = getUserData(campaign)
         for d in data:
             payload = {}
             if d[1].strip() in "Arabic":
                 message_text = sms_dict['ar']
-                payload = {'message': str_to_hex(message_text),'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "OL"}
+                payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "OL"}
             elif d[1].strip() in "English":
                 message_text = sms_dict['en']
                 payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "N"}
             payloadArr.append(payload)
 
-        return (True, payloadArr)
+        # Now the sms_sender is responsible for doing the final
+        # update Action saying things are done
+        payloadArr.append({
+            'sentinel': {
+                'ID': event['ID'],
+                'Action': event['Action']
+            }
+        })
+        return True, payloadArr
     except Exception:
-        return (False, None)
+        return False, None
     finally:
-        updateAction(event['ID'],event['Action'])
+        updateAction(event['ID'], 'Processing')
         pass
 # -----------------------------------------------------------
 if __name__ == '__main__':
