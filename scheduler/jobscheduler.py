@@ -46,15 +46,23 @@ def _addJob (conf):
     global _cid
     global _idList
 
+    def helper():
+        jb = watchjob.WatchJob(conf)
+        if jb.valid:
+            _newJobs[conf['ID']] = jb
+        return conf['ID'], jb.valid
+
     if str(conf['ID']).strip() == "":
         print " c1. No ID, new one"
         while _cid in _idList:
             _cid += 1
         conf['ID'] = str(_cid)
         _cid += 1
-        
-        _newJobs[conf['ID']] = watchjob.WatchJob(conf)
-        return conf['ID']
+
+        jb = watchjob.WatchJob(conf)
+        if jb.valid:
+            _newJobs[conf['ID']] = jb
+        return conf['ID'], jb.valid
 
     elif conf['Action'].strip() == "" and conf['ID'] in _currentJobs:   #_currentJobs.has_key(conf['ID']):
             print " c2. Cleared Action"

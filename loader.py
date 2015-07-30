@@ -10,6 +10,7 @@ def checkRow(row):
     mandatory = ['Repeat', 'Type', 'Campaign', 'Start Date', 'Hour', 'Minute', 'English', 'Arabic']
     for key in mandatory:
         if row[key] == '':
+            print "invalid: "+key
             return False
 
     return True

@@ -51,9 +51,9 @@ class WatchJob(object):
         )
 
         # Short circuit if we missed our time
-        if self.conf['Repeat'] == 'Once' and self.fDate <= datetime.now():
+        if self.conf['Repeat'] == 'Once' and self.fDate <= localZone.localize(datetime.now()):
             self.valid = False
-            print "Missed one: ", self.fDate.sftrftime("%d/%m/%Y, %H:%M:%S")
+            print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
         else:
             self.valid = True
 
