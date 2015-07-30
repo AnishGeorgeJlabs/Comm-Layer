@@ -49,12 +49,20 @@ class WatchJob(object):
                 time(int(self.conf['Hour']), int(self.conf['Minute']))
             )
         )
-        self.sDate = self.fDate.replace(hour=0, minute=0, second=0)
-        print "time: ", self.fDate.time()
 
-        self._set_trigger()
-        if not self._crash_recovery():
-            self._set_delay()
+        # Short circuit if we missed our time
+        if self.conf['Repeat'] == 'Once' and self.fDate <= localZone.localize(datetime.now()):
+            self.valid = False
+            print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
+        else:
+            self.valid = True
+
+            self.sDate = self.fDate.replace(hour=0, minute=0, second=0)
+            print "time: ", self.fDate.time()
+
+            self._set_trigger()
+            if not self._crash_recovery():
+                self._set_delay()
 
     def _crash_recovery(self):
         if self.conf['Repeat'] == 'Hourly' or self.conf['Repeat'] == 'Daily':
@@ -118,7 +126,7 @@ class WatchJob(object):
         elif self.conf['Repeat'] == 'Daily':  # Daily
             self.trigger = CronTrigger(hour=str(self.fDate.hour), minute=str(self.fDate.minute))
         else:
-            self.trigger = CronTrigger(second='*/15')
+            self.trigger = DateTrigger(self.fDate)
 
         # DEBUG
         print "Created trigger", self.trigger

@@ -3,24 +3,28 @@ import urllib, urllib2
 import pika
 import json
 from data.configuration import config
+from data.sheet import updateAction
 
 def sendSms(payload):
     try:
-        assert {'message', 'cell_phone'} & payload.viewkeys(), "Invalid Data Packet"
-        values = {'user' : 'wadiops', 'passwd' : 'w@d1Rock$', 'DR':'Y','Sid':'Jlabs'}
-        values.update(payload)
-        url = config['sms_post_url']
-        data = urllib.urlencode(values)
-        request = urllib2.Request(url, data)
-        print "Got payload: ", payload
-        wp = urllib2.urlopen(request)
-        print wp.read()
+        if 'sentinel' in payload:
+            d = payload['sentinel']
+            updateAction(d['ID'], d['Action'])
+            print "Finished with job: ", d['ID']
+        else:
+            values = {'user' : 'WADI.COM', 'passwd' : 'SMS#WADI', 'DR':'Y','Sid':'Jlabs'}
+            values.update(payload)
+            url = config['sms_post_url']
+            data = urllib.urlencode(values)
+            request = urllib2.Request(url, data)
+            print "Got payload: ", payload
+            wp = urllib2.urlopen(request)
+            print wp.read()
         return True
     except AssertionError:
-        raise
         return True
-    except Exception:
-        raise
+    except Exception, e:
+        print " >>> Error: "+str(e)
         return False
 
 

@@ -46,26 +46,31 @@ def _addJob (conf):
     global _cid
     global _idList
 
+    def helper():
+        jb = watchjob.WatchJob(conf)
+        if jb.valid:
+            _newJobs[conf['ID']] = jb
+        return conf['ID'], jb.valid
+
     if str(conf['ID']).strip() == "":
         print " c1. No ID, new one"
         while _cid in _idList:
             _cid += 1
         conf['ID'] = str(_cid)
         _cid += 1
-        
-        _newJobs[conf['ID']] = watchjob.WatchJob(conf)
-        return conf['ID']
+
+        # Validity for job, only if the case is repeat = 'once' else always valid
+        return helper()
 
     elif conf['Action'].strip() == "" and conf['ID'] in _currentJobs:   #_currentJobs.has_key(conf['ID']):
             print " c2. Cleared Action"
             # restart job
             _currentJobs[conf['ID']].cancelJob()        # Cancel the job
-            _newJobs[conf['ID']] = watchjob.WatchJob(conf)
-            return conf['ID']
+            return helper()
+
     elif conf['ID'] not in _currentJobs:   #not _currentJobs.has_key(conf['ID']):           # Event of a crash
             print " c3. App crash or tampering"
-            _newJobs[conf['ID']] = watchjob.WatchJob(conf)
-            return None
+            return helper()                     # Problematic
     elif conf['ID'] in _currentJobs: #_currentJobs.has_key(conf['ID']):               # same, transfere
             print " c4. Action not cleared, same job, ignore"
             _newJobs[conf['ID']] = _currentJobs.pop(conf['ID'])
@@ -85,12 +90,14 @@ def configure_jobs(csvlist):
             if conf['ID'] != "":
                 _idList.append(int(conf['ID']))
         for i, conf in enumerate(csvlist):
-            if conf['Action'] == 'Done':
+            if conf['Action'] in ['Done', 'Processing', 'Missed']:
                 continue
             res = _addJob (conf)
             if res is not None:
-                external['update_id'](res, i, 'Registered')
-                #external['update_action'](res, 'Registered')
+                if res[1]:
+                    external['update_id'](res[0], i, 'Registered')
+                else:
+                    external['update_id'](res[0], i, 'Missed')
 
         #print "Remaining ", _currentJobs
         for k, remaining in _currentJobs.iteritems():

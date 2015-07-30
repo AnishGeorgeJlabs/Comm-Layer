@@ -25,8 +25,18 @@ def get_scheduler_sheet():
 
 def get_testing_sheet():
     return get_worksheet(3)
-def get_custom_sheet():
-    return get_worksheet(4)
+
+def get_custom_sheet(*args):
+    try:            # Format = cust_<name>_i<index>
+        if len(args) > 0:
+            idx = int(args[0].split("_")[-1][1:])
+            return get_worksheet(5+idx)
+        else:
+            return get_worksheet(4)
+    except:
+        print " >> ERROR: malformed custom sheet parameter, returning base custom"
+        return get_worksheet(4)
+
 def get_block_sheet():              ## NOTE: Only to be used by blockList.py
     return get_worksheet(5)
 

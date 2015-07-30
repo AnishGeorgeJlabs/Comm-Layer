@@ -13,21 +13,29 @@ while True:
 """
 
 from scheduler import jobscheduler
-from data.handler import watcher
 from data.sheet import updateId, updateAction
 from data.configuration import config
 import pika
 import json
 
+connection = pika.BlockingConnection(pika.ConnectionParameters(
+    host='localhost'))
+pingChannel = connection.channel()
+pingChannel.queue_declare(queue=config['event_queue'])
+
+def ping(sender, event):
+    print "executing ping, "+str(connection.is_open)
+    pingChannel.basic_publish(exchange='',
+                              routing_key=config['event_queue'],
+                              body=json.dumps(event))
+
 def main():
-    jobscheduler.register(watcher)
+    jobscheduler.register(ping)
     jobscheduler.set_id_update(updateId)
     jobscheduler.set_action_update(updateAction)
 
     # ------- Rabbit MQ --------- #
     # Waiting on the loader to send in the scheduling sheet #
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost'))
     channel = connection.channel()
     channel.queue_declare(queue=config['app_queue'])
 
