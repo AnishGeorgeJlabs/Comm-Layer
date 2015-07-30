@@ -44,3 +44,7 @@ Temporary Items
 
 # Dat files
 *.pyc
+supervise
+
+# Logs
+logs/log*.txt
