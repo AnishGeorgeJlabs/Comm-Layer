@@ -59,27 +59,18 @@ def _addJob (conf):
         conf['ID'] = str(_cid)
         _cid += 1
 
-        jb = watchjob.WatchJob(conf)
-        if jb.valid:
-            _newJobs[conf['ID']] = jb
-        return conf['ID'], jb.valid
+        # Validity for job, only if the case is repeat = 'once' else always valid
+        return helper()
 
     elif conf['Action'].strip() == "" and conf['ID'] in _currentJobs:   #_currentJobs.has_key(conf['ID']):
             print " c2. Cleared Action"
             # restart job
             _currentJobs[conf['ID']].cancelJob()        # Cancel the job
+            return helper()
 
-            # Validity for job, only if the case is repeat = 'once' else always valid
-            jb = watchjob.WatchJob(conf)
-            if jb.valid:
-                _newJobs[conf['ID']] = jb
-            return conf['ID'], jb.valid
     elif conf['ID'] not in _currentJobs:   #not _currentJobs.has_key(conf['ID']):           # Event of a crash
             print " c3. App crash or tampering"
-            jb = watchjob.WatchJob(conf)
-            if jb.valid:
-                _newJobs[conf['ID']] = jb
-            return None                     # Problematic
+            return helper()                     # Problematic
     elif conf['ID'] in _currentJobs: #_currentJobs.has_key(conf['ID']):               # same, transfere
             print " c4. Action not cleared, same job, ignore"
             _newJobs[conf['ID']] = _currentJobs.pop(conf['ID'])
