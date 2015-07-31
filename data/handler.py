@@ -4,10 +4,8 @@ import json
 import pika
 from configuration import config
 
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters('localhost'))
 
-def watcher(event):
+def watcher(event, send_sms, log):
     print "Debug: Watcher started ..."
     try:
         ## Full code for main parent
@@ -15,18 +13,12 @@ def watcher(event):
         if not res:
           raise Exception
 
-        # --------- Now for the Rabbit --------- #
-        channel = connection.channel()
-        channel.queue_declare(queue=config['sms_queue'])
-
+        log(str(event['ID']), len(payloadArr))
         print "Payload array size", len(payloadArr)
-        for payload in payloadArr:
-          channel.basic_publish(exchange='',
-                                routing_key=config['sms_queue'],
-                                body=json.dumps(payload))
 
-        #connection.close()
-        # -------------------------------------- #
+        for payload in payloadArr:
+            send_sms(payload)
+
         return True
     except Exception:
         return False
@@ -35,15 +27,28 @@ def watcher(event):
 
 if __name__ == '__main__':
     print "Getting ready"
-    pingChannel = connection.channel()
-    pingChannel.queue_declare(queue=config['event_queue'])
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue=config['event_queue'])
+
+    def send_sms(payload):
+        channel.basic_publish(exchange='',
+                              routing_key=config['sms_queue'],
+                              body=json.dumps(payload))
+
+    def log(job_id, size):
+        msg = {'sender': 'handler', 'log': {
+            'job_id': job_id, 'payload_size': size
+        }}
+        channel.basic_publish(exchange='wadi:logs', routing_key='', body=json.dumps(msg))
 
     def callback(ch, method, properties, body):
         print "executing ping callback"
         event = json.loads(body)
-        watcher(event)
+        watcher(event, send_sms, log)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    pingChannel.basic_qos(prefetch_count=1)
-    pingChannel.basic_consume(callback, queue=config['event_queue'])
-    pingChannel.start_consuming()
+
+    channel.basic_qos(prefetch_count=1)
+    channel.basic_consume(callback, queue=config['event_queue'])
+    channel.start_consuming()
