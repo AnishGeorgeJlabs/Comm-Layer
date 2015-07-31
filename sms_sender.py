@@ -38,14 +38,14 @@ if __name__ == "__main__":
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='localhost'))
     channel = connection.channel()
-
+    logChannel = connection.channel()
     channel.queue_declare(queue=config['sms_queue'])
-    channel.exchange_declare(exchange='wadi:logs', type='fanout')
+    logChannel.exchange_declare(exchange='wadi:logs', type='fanout')
 
     def log(job_id):
         def lg(status):
             msg = json.dumps({"sender": "sms_sender", "log": {'job_id': job_id, 'status': status}})
-            channel.basic_publish(exchange='wadi:logs', routing_key='', body=msg)
+            logChannel.basic_publish(exchange='wadi:logs', routing_key='', body=msg)
         return lg
 
     def callback(ch, method, properties, body):
