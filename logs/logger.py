@@ -28,10 +28,10 @@ def log(job_id, data):
         lFile.writelines([
             "\n",
             "\nProcess started on "+data['process_start'],
-            "\nTotal # of messages: "+data['size'],
-            "\n        Sent: "+data['counts']['success'],
-            "\n      failed: "+data['counts']['failure'],
-            "\n  exceptions: "+data['counts']['error'],
+            "\nTotal # of messages: "+str(data['size']),
+            "\n        Sent: "+str(data['counts']['success']),
+            "\n      failed: "+str(data['counts']['failure']),
+            "\n  exceptions: "+str(data['counts']['error']),
             "\nProcess ended on "+data['process_end']
         ])
     return None
@@ -43,15 +43,17 @@ def critical_log(data):
 def inc(job_id, status):
     data = runDict[job_id]
     data['counts'][status] += 1
-    if sum(data['count'].values()) == data['size']:
+    if sum(data['counts'].values()) == data['size']:
         runDict.pop(job_id)
         log(job_id, data)
 
 def callback(ch, method, properties, body):
+    print "calback called"
     try:
         data = json.loads(body)
-        sender = data['from']
+        sender = data['sender']
         log = data['log']
+        print "LOG: ", data
 
         if sender == 'sms_sender':
             inc(log['job_id'], log['status'])
@@ -59,15 +61,20 @@ def callback(ch, method, properties, body):
             process_job(log['job_id'], log['payload_size'])
         elif sender == "critical":
             critical_log(log)
-
-    except:
-        pass
+    except Exception, e:
+        raise
+        print "ERROR: LOGGER: ", e
 
 if __name__ == "__main__":
+    print "Starting logger"
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+
     channel = connection.channel()
+
     channel.exchange_declare(exchange='wadi:logs', type='fanout')
+
     result = channel.queue_declare(exclusive=True)
+
     queue_name = result.method.queue
 
     channel.queue_bind(exchange='wadi:logs',
@@ -77,4 +84,5 @@ if __name__ == "__main__":
                           queue=queue_name,
                           no_ack=True)
     channel.start_consuming()
+    print "Logger started"
 

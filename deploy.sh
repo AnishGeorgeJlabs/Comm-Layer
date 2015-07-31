@@ -5,6 +5,7 @@ sudo ./resetRabbit.sh
 screen -d -m -S wadi_sms
 screen -S wadi_sms -X zombie qr
 
+screen -S wadi_sms -X screen ./logger.sh
 screen -S wadi_sms -X screen supervise .
 
 for i in $(eval echo {1..$1}); do

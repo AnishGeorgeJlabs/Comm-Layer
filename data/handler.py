@@ -13,8 +13,8 @@ def watcher(event, send_sms, log):
         if not res:
           raise Exception
 
-        log(str(event['ID']), len(payloadArr))
-        print "Payload array size", len(payloadArr)
+        log(str(event['ID']), len(payloadArr) - 1)              # The last one is the sentinel
+        print "Payload array size", len(payloadArr) - 1
 
         for payload in payloadArr:
             send_sms(payload)
@@ -30,6 +30,7 @@ if __name__ == '__main__':
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
     channel.queue_declare(queue=config['event_queue'])
+    channel.exchange_declare(exchange='wadi:logs', type='fanout')
 
     def send_sms(payload):
         channel.basic_publish(exchange='',

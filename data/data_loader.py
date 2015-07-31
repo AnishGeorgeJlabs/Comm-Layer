@@ -110,12 +110,12 @@ def load_data(event):
 
         # Now the sms_sender is responsible for doing the final
         # update Action saying things are done
-        payloadArr.append({
+        payloadArr.append(['sentinel', {
             'sentinel': {
                 'ID': event['ID'],
                 'Action': event['Action']
             }
-        })
+        }])
         return True, payloadArr
     except Exception:
         return False, None
