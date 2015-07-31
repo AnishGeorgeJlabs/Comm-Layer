@@ -106,16 +106,16 @@ def load_data(event):
             elif d[1].strip() in "English":
                 message_text = sms_dict['en']
                 payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "N"}
-            payloadArr.append(payload)
+            payloadArr.append([str(event['ID']), payload])
 
         # Now the sms_sender is responsible for doing the final
         # update Action saying things are done
-        payloadArr.append({
+        payloadArr.append(['sentinel', {
             'sentinel': {
                 'ID': event['ID'],
                 'Action': event['Action']
             }
-        })
+        }])
         return True, payloadArr
     except Exception:
         return False, None
