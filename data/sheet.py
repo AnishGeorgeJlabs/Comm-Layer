@@ -42,6 +42,7 @@ def get_block_sheet():              ## NOTE: Only to be used by blockList.py
 
 actionAlpha = 'I'
 idAlpha = 'J'
+linkAlpha = 'K'
 
 def updateId(id, row, *arg):
     print 'inside updateId, ', id, row
@@ -51,15 +52,22 @@ def updateId(id, row, *arg):
     if len(arg) > 0:
         worksheet.update_acell(actionAlpha+str(row+2), arg[0])
 
+def updateLink(id, link):
+    updateAux(id, linkAlpha, link)
+
 def updateAction(id, action):
+    updateAux(id, actionAlpha, action)
+
+def updateAux(id, col, data):
     worksheet = get_scheduler_sheet()
     val = worksheet.get_all_records()
     for x in val:
         try:
             if int(id) == int(x['ID']):
                 rowNum = val.index(x) + 2
-                column = actionAlpha+str(rowNum)
-                print column
-                worksheet.update_acell(column, str(action))
+                cell = col+str(rowNum)
+                print cell
+                worksheet.update_acell(cell, str(data))
         except:
             print "Some error came"
+
