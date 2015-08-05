@@ -16,6 +16,7 @@ def upload_file(filename, path):
 def save_to_file(query, filename):
     cursor = db.cursor()
     cursor.execute(query)
+    print "Query executed, writing file"
     with open(filename, 'w') as cfile:
         writer = csv.writer(cfile)
         writer.writerow([i[0] for i in cursor.description])
