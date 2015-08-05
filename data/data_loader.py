@@ -54,19 +54,24 @@ def getUserData(campaign):
         data = get_external_data(event['ID'])
         print "Got external data: "+str(data)
     elif clo.startswith("all"):       # Actually, all in campaig.lower()
+        print "Starts with all"
         #cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
         cu = db.cursor()
         cu.execute(QUERRY[clo])
         for x in cu:
             data.append(x)
     elif clo in "testing":
+        print "Testing campaign"
         # data = [["919818261929","Arabic"],["917838310825","English"],["971559052361","Arabic"]]
         data = get_testing_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
     elif clo in "custom":
+        print "Custom campaign"
         data = get_custom_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
     elif clo.startswith("cust_"):
+        print "starts with cust_"
         data = get_custom_sheet(clo).get_all_values()[1:]
     else:
+        print "Different: "+clo
         #cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
         cu = db.cursor()
         cu.execute(QUERRY['other'],campaign)
