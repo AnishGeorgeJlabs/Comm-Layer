@@ -25,14 +25,18 @@ def save_to_file(query, filename):
 def work_external_data(event):
     url = event['External Link']
     r = requests.get(url)
+    print "Inside work external"
     if r.status_code == 200:
         rdata = r.json()
         query = rdata['query']
+        print "Got query"+query
         filename = "res_"+event['ID']+".csv"
         filename_full = './data/temp/'+filename
         save_to_file(query, filename_full)
+        print "Updating action"
         updateAction(event['ID'], 'Data Loaded')
         upload_file(filename, filename_full)
+        print "Updating link"
         updateLink(event['ID'], 'http://jlabs.co/wadi/query_results/'+filename)
     else:
         updateAction(event['ID'], 'Bad Link')
