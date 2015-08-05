@@ -34,6 +34,7 @@ def clean_english(text):
 #-----------------Get Campaign Data---------------
 def get_external_data(id):
     url = getFileLink(id)
+    print "Got url: "+url
     if url == '':
         return []
     r = requests.get(url)
@@ -51,6 +52,7 @@ def getUserData(campaign):
     clo = campaign.lower()
     if clo in "external":
         data = get_external_data(event['ID'])
+        print "Got external data: "+str(data)
     elif clo.startswith("all"):       # Actually, all in campaig.lower()
         #cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
         cu = db.cursor()
