@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 
 # This module does the data downloading part from the csv
-import pymysql
-from sheet import updateAction, get_testing_sheet, get_custom_sheet, get_block_sheet
-import pymongo
+from sheet import updateAction, get_testing_sheet, get_custom_sheet, get_block_sheet, getFileLink
 from sql_data import db
 import string
+import requests
+import csv
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
@@ -32,12 +32,26 @@ def clean_english(text):
     return filtered_txt
 # ------------------------------------------------
 #-----------------Get Campaign Data---------------
+def get_external_data(id):
+    url = getFileLink(id)
+    if url == '':
+        return []
+    r = requests.get(url)
+    if r.status_code == 200:
+        raw = filter(lambda k: len(k) > 0, r.text.split("\n"))[1:]
+        reader = csv.reader(raw)
+        data = list(reader)
+        return data
+    else:
+        return []
 
 def getUserData(campaign):
     print "inside getUserData"
     data = []
     clo = campaign.lower()
-    if clo.startswith("all"):       # Actually, all in campaig.lower()
+    if clo in "external":
+        data = get_external_data(event['ID'])
+    elif clo.startswith("all"):       # Actually, all in campaig.lower()
         #cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
         cu = db.cursor()
         cu.execute(QUERRY[clo])

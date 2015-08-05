@@ -71,3 +71,10 @@ def updateAux(id, col, data):
         except:
             print "Some error came"
 
+def getFileLink(id):
+    worksheet = get_scheduler_sheet()
+    val = worksheet.get_all_records()
+    for x in val:
+        if int(id) == int(x['ID']):
+            return x['Data Link']
+    return ''
