@@ -110,7 +110,6 @@ class WatchJob(object):
         self.triggerObj = {
             'Campaign': self.conf['Campaign'],
             'ID': self.conf['ID'],
-            'Type': self.conf['Type'],
             'Arabic': self.conf['Arabic'],
             'English': self.conf['English']
         }
