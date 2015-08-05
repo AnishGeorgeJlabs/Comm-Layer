@@ -35,8 +35,8 @@ def work_external_data(event):
         filename_full = './data/temp/'+filename
         save_to_file(query, filename_full)
         print "Updating action"
-        updateAction(event['ID'], 'Data Loaded')
         upload_file(filename, filename_full)
+        updateAction(event['ID'], 'Data Loaded')
         print "Updating link"
         updateLink(event['ID'], 'http://jlabs.co/wadi/query_results/'+filename)
     else:

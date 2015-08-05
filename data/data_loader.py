@@ -47,9 +47,9 @@ def get_external_data(id):
         return []
 
 def getUserData(campaign):
-    print "inside getUserData"
     data = []
     clo = campaign.lower()
+    print "inside getUserData, "+clo
     if clo in "external":
         data = get_external_data(event['ID'])
         print "Got external data: "+str(data)
