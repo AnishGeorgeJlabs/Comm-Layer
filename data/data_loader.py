@@ -135,7 +135,8 @@ def load_data(event):
             }
         }])
         return True, payloadArr
-    except Exception:
+    except Exception, e:
+        raise
         return False, None
     finally:
         updateAction(event['ID'], 'Processing')
