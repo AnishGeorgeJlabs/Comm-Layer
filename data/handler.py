@@ -28,6 +28,7 @@ def watcher(event, send_sms, log):
 
         return True
     except Exception:
+        raise
         return False
     finally:
         pass     # cleanup

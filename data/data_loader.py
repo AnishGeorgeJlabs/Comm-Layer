@@ -46,12 +46,12 @@ def get_external_data(id):
     else:
         return []
 
-def getUserData(campaign):
+def getUserData(campaign, id):
     data = []
     clo = campaign.lower()
-    print "inside getUserData, "+clo
+    print "inside getUserData, "+clo+", and id: "+id
     if clo in "external":
-        data = get_external_data(event['ID'])
+        data = get_external_data(id)
         print "Got external data: "+str(data)
     elif clo.startswith("all"):       # Actually, all in campaig.lower()
         print "Starts with all"
@@ -122,7 +122,7 @@ def load_data(event):
 
         sms_dict = {'ar': str_to_hex(ar), 'en': clean_english(en) }
         payloadArr = []
-        data = getUserData(campaign)
+        data = getUserData(campaign, event['ID'])
         for d in data:
             payload = {}
             if d[1].strip() in "Arabic":
