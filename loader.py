@@ -7,7 +7,7 @@ worksheet = get_scheduler_sheet().get_all_records()
 #print "Got worksheet", str(worksheet)
 
 def checkRow(row):
-    mandatory = ['Repeat', 'Type', 'Campaign', 'Start Date', 'Hour', 'Minute', 'English', 'Arabic']
+    mandatory = ['Repeat', 'Campaign', 'Start Date', 'Hour', 'Minute', 'English', 'Arabic']
     for key in mandatory:
         if row[key] == '':
             print "invalid: "+key

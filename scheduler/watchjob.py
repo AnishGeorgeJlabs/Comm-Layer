@@ -110,13 +110,10 @@ class WatchJob(object):
         self.triggerObj = {
             'Campaign': self.conf['Campaign'],
             'ID': self.conf['ID'],
-            'Type': self.conf['Type']
+            'Type': self.conf['Type'],
+            'Arabic': self.conf['Arabic'],
+            'English': self.conf['English']
         }
-        if self.conf['Type'] == 'SMS':
-            self.triggerObj.update({
-                'Arabic': self.conf['Arabic'],
-                'English': self.conf['English']
-            })
         self.trigger = {}           # Actual trigger object for the apscheduler
 
         if self.conf['Repeat'] == 'Once':

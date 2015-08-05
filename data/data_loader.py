@@ -95,6 +95,10 @@ def load_data(event):
         campaign = event['Campaign']
         ar = event['Arabic']
         en = event['English']
+        if 'uae' in campaign.lower():
+            ar += "\nOPTOUT@4782"
+            en += "\nOPTOUT@4782"
+
         sms_dict = {'ar': str_to_hex(ar), 'en': clean_english(en) }
         payloadArr = []
         data = getUserData(campaign)
