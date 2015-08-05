@@ -120,6 +120,7 @@ class WatchJob(object):
                 'type': 'external_setup',
                 'data': self.conf
             }
+            print "watch job got External"
             dispatcher.send(signal=SIG, event=event, sender=self)
 
         if self.conf['Repeat'] == 'Once':
