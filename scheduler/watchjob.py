@@ -139,8 +139,12 @@ class WatchJob(object):
             self.triggerObj.update({"Action": "Done"})
         else:
             self.triggerObj.update({"Action": _correct_out_time(datetime.now()).strftime(_format)})
-        
-        dispatcher.send(signal=SIG, event=self.triggerObj, sender=self)
+
+        event = {
+            "type": "send_sms",
+            "data": self.triggerObj
+        }
+        dispatcher.send(signal=SIG, event=event, sender=self)
 
     def cancelJob(self):
         print "Remove called for campaign ", self.conf['Campaign']

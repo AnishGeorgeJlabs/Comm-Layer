@@ -40,13 +40,16 @@ def get_custom_sheet(*args):
 def get_block_sheet():              ## NOTE: Only to be used by blockList.py
     return get_worksheet(5)
 
+idAlpha = 'I'
+actionAlpha = 'H'
+
 def updateId(id, row, *arg):
     print 'inside updateId, ', id, row
-    cell = 'J'+str(row + 2)
+    cell = idAlpha+str(row + 2)
     worksheet = get_scheduler_sheet()
     worksheet.update_acell(cell, id)
     if len(arg) > 0:
-        worksheet.update_acell('I'+str(row+2), arg[0])
+        worksheet.update_acell(actionAlpha+str(row+2), arg[0])
 
 def updateAction(id, action):
     worksheet = get_scheduler_sheet()
@@ -54,9 +57,8 @@ def updateAction(id, action):
     for x in val:
         try:
             if int(id) == int(x['ID']):
-                print "IF ke andar aa gaya"
                 rowNum = val.index(x) + 2
-                column = 'I'+str(rowNum)
+                column = actionAlpha+str(rowNum)
                 print column
                 worksheet.update_acell(column, str(action))
         except:

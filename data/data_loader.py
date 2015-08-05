@@ -4,8 +4,8 @@
 import pymysql
 from sheet import updateAction, get_testing_sheet, get_custom_sheet, get_block_sheet
 import pymongo
+from sql_data import db
 import string
-mdb = pymongo.MongoClient("mongodb://45.55.232.5:27017").wadi
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
@@ -38,8 +38,8 @@ def getUserData(campaign):
     data = []
     clo = campaign.lower()
     if clo.startswith("all"):       # Actually, all in campaig.lower()
-        cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
-        cu = cx.cursor()
+        #cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
+        cu = db.cursor()
         cu.execute(QUERRY[clo])
         for x in cu:
             data.append(x)
@@ -51,8 +51,8 @@ def getUserData(campaign):
     elif clo.startswith("cust_"):
         data = get_custom_sheet(clo).get_all_values()[1:]
     else:
-        cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
-        cu = cx.cursor()
+        #cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
+        cu = db.cursor()
         cu.execute(QUERRY['other'],campaign)
         for x in cu:
             data.append(x)

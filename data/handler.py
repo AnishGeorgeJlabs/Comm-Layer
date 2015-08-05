@@ -9,15 +9,17 @@ def watcher(event, send_sms, log):
     print "Debug: Watcher started ..."
     try:
         ## Full code for main parent
-        res, payloadArr = load_data(event)
-        if not res:
-          raise Exception
+        if event['type'] == 'send_sms':
+            data = event['data']
+            res, payloadArr = load_data(data)
+            if not res:
+              raise Exception
 
-        log(str(event['ID']), len(payloadArr) - 1)              # The last one is the sentinel
-        print "Payload array size", len(payloadArr) - 1
+            log(str(data['ID']), len(payloadArr) - 1)              # The last one is the sentinel
+            print "Payload array size", len(payloadArr) - 1
 
-        for payload in payloadArr:
-            send_sms(payload)
+            for payload in payloadArr:
+                send_sms(payload)
 
         return True
     except Exception:
