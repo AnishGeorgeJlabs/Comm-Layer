@@ -90,7 +90,7 @@ def configure_jobs(csvlist):
             if conf['ID'] != "":
                 _idList.append(int(conf['ID']))
         for i, conf in enumerate(csvlist):
-            if conf['Action'] in ['Done', 'Processing', 'Missed']:
+            if conf['Action'] in ['Done', 'Processing', 'Missed', 'Bad Link']:
                 continue
             res = _addJob (conf)
             if res is not None:

@@ -3,6 +3,7 @@ from data_loader import load_data
 import json
 import pika
 from configuration import config
+from external_setup import work_external_data
 
 
 def watcher(event, send_sms, log):
@@ -20,6 +21,9 @@ def watcher(event, send_sms, log):
 
             for payload in payloadArr:
                 send_sms(payload)
+        elif event['type'] == 'external_setup':
+            data = event['data']
+            result = work_external_data(data)
 
         return True
     except Exception:

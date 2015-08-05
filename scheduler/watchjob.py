@@ -115,6 +115,12 @@ class WatchJob(object):
             'English': self.conf['English']
         }
         self.trigger = {}           # Actual trigger object for the apscheduler
+        if self.conf['Campaign'].lower() in "external":
+            event = {
+                'type': 'external_setup',
+                'data': self.conf
+            }
+            dispatcher.send(signal=SIG, event=event, sender=self)
 
         if self.conf['Repeat'] == 'Once':
             self.trigger = DateTrigger(self.fDate)

@@ -40,8 +40,8 @@ def get_custom_sheet(*args):
 def get_block_sheet():              ## NOTE: Only to be used by blockList.py
     return get_worksheet(5)
 
-idAlpha = 'I'
-actionAlpha = 'H'
+actionAlpha = 'I'
+idAlpha = 'J'
 
 def updateId(id, row, *arg):
     print 'inside updateId, ', id, row
