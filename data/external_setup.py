@@ -35,9 +35,6 @@ def mega_query_save_to_file(queries, filename):
     cursor = db.cursor()
     res_list = []
 
-    phIndex = 0         # Constants
-    langIndex = 1
-
     # Super algorithm, God knows how much time it will take
     for query in queries:
         cursor.execute(query)
