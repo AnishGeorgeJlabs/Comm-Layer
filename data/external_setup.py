@@ -13,13 +13,32 @@ ftp.cwd("/jlabs_co/wadi/query_results")
 def upload_file(filename, path):
     ftp.storlines("STOR "+filename, open(path))
 
+def remove_duplicates(data):
+    """Remove duplicates from the csv data list, prefer phones with arabic language attachment
+    This algorithm assumes that phones are the first column and language is the second one"""
+
+    sorting_dict = {}
+    for row in data:
+        phone = row.pop(0)
+        if phone not in sorting_dict:
+            sorting_dict[phone] = row
+        else:
+            olang = sorting_dict[phone][0].lower()
+            clang = row[0].lower()
+            if olang in 'english' and clang in 'arabic':
+                sorting_dict[phone] = row
+
+    return [[k] + row for k, row in sorting_dict.items()]
+
 def mega_query_save_to_file(queries, filename):
+    """We have multiple queries, get result of each and intersect"""
     cursor = db.cursor()
     res_list = []
 
     phIndex = 0         # Constants
     langIndex = 1
 
+    # Super algorithm, God knows how much time it will take
     for query in queries:
         cursor.execute(query)
         # convert cursor to list
@@ -30,18 +49,16 @@ def mega_query_save_to_file(queries, filename):
             ))
         )
 
-    result = [
-        [a[phIndex], a[langIndex]] for a in
-        map(lambda st: st.split('|'),
-            reduce(lambda a, b: a.intersection(b), res_list))
-        ]
+    result = map(lambda st: st.split('|'),
+                 reduce(lambda a, b: a.intersection(b), res_list))
     # The algorithm has been tested
     # Note, need to see if json.loads and dumps is better than using this kind of stringification
+    final = remove_duplicates(result)
 
     with open(filename, 'w') as cfile:
         writer = csv.writer(cfile)
-        writer.writerow(["Phone", "Language"])
-        writer.writerows(result)
+        #writer.writerow(["Phone", "Language"])
+        writer.writerows(final)
 
 def save_to_file(query, filename):
     cursor = db.cursor()
