@@ -57,7 +57,7 @@ def mega_query_save_to_file(queries, filename):
 
     with open(filename, 'w') as cfile:
         writer = csv.writer(cfile)
-        #writer.writerow(["Phone", "Language"])
+        writer.writerow(["Phone", "Language"])
         writer.writerows(final)
 
 def save_to_file(query, filename):
