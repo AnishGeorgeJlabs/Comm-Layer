@@ -13,6 +13,36 @@ ftp.cwd("/jlabs_co/wadi/query_results")
 def upload_file(filename, path):
     ftp.storlines("STOR "+filename, open(path))
 
+def mega_query_save_to_file(queries, filename):
+    cursor = db.cursor()
+    res_list = []
+
+    phIndex = 0         # Constants
+    langIndex = 1
+
+    for query in queries:
+        cursor.execute(query)
+        # convert cursor to list
+        res_list.append(set(
+            map(
+                lambda arr: reduce(lambda s, k: s+str(k)+'|', arr, '').strip('|'),
+                list(cursor)
+            ))
+        )
+
+    result = [
+        [a[phIndex], a[langIndex]] for a in
+        map(lambda st: st.split('|'),
+            reduce(lambda a, b: a.intersection(b), res_list))
+        ]
+    # The algorithm has been tested
+    # Note, need to see if json.loads and dumps is better than using this kind of stringification
+
+    with open(filename, 'w') as cfile:
+        writer = csv.writer(cfile)
+        writer.writerow(["Phone", "Language"])
+        writer.writerows(result)
+
 def save_to_file(query, filename):
     cursor = db.cursor()
     cursor.execute(query)
@@ -33,7 +63,12 @@ def work_external_data(event):
         print "Got query"+query
         filename = "res_"+event['ID']+".csv"
         filename_full = './data/temp/'+filename
-        save_to_file(query, filename_full)
+
+        if isinstance(query, list):
+            mega_query_save_to_file(query, filename_full)
+        else:
+            save_to_file(query, filename_full)
+
         print "Updating action"
         upload_file(filename, filename_full)
         updateAction(event['ID'], 'Data Loaded')
