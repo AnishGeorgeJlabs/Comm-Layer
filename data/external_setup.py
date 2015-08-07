@@ -1,5 +1,5 @@
 import json
-from sql_data import db
+from sql_data import db, connect_db
 import csv
 from sheet import updateAction, updateLink
 import requests
@@ -32,12 +32,13 @@ def remove_duplicates(data):
 
 def mega_query_save_to_file(queries, filename):
     """We have multiple queries, get result of each and intersect"""
-    cursor = db.cursor()
+    #cursor = db.cursor()
     res_list = []
 
     # Super algorithm, God knows how much time it will take
-    for query in queries:
-        cursor.execute(query)
+    for query_obj in queries:
+        cursor = connect_db(query_obj['db'])
+        cursor.execute(query_obj['query'])
         # convert cursor to list
         res_list.append(set(
             map(
