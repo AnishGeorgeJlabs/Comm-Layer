@@ -30,15 +30,26 @@ def remove_duplicates(data):
 
     return [[k] + row for k, row in sorting_dict.items()]
 
+def complete_event(query_event):
+    for query_obj in query_event:
+        cursor = connect_db(query_obj['db'])
+        cursor.exectue(query_obj['query'])
+        pass
+    return cursor
+
 def mega_query_save_to_file(queries, filename):
     """We have multiple queries, get result of each and intersect"""
     #cursor = db.cursor()
     res_list = []
 
     # Super algorithm, God knows how much time it will take
-    for query_obj in queries:
+    for query_event in queries:
+
+        '''
         cursor = connect_db(query_obj['db'])
         cursor.execute(query_obj['query'])
+        '''
+        cursor = complete_event(query_event)            # God knows
         # convert cursor to list
         res_list.append(set(
             map(
