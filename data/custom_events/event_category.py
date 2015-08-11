@@ -4,6 +4,7 @@ Event algorithm to get the category match from database
 Tested on Tue, 11 Aug, 08:28 PM
 """
 from . import connect_db
+import json
 
 def get_category(mode, cat_list):
     """ Follows the query_event specifications
@@ -78,7 +79,7 @@ def _step2(cat_list):
     """
     :return: A dict of { sku: category }
     """
-    where_clause = 'where cat.name in (%s)' % str(cat_list).strip('[]')
+    where_clause = 'where cat.name in (%s)' % json.dumps(cat_list).strip('[]')
 
     query = """
     SELECT conf.sku, cat.name FROM catalog_config conf
