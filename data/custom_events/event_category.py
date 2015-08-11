@@ -81,7 +81,7 @@ def _step2(cat_list):
     SELECT conf.sku, cat.name
     FROM catalog_config conf JOIN catalog_config_has_catalog_category cc
     ON cc.fk_catalog_config = conf.id_catalog_config
-    $(where_clause)
+    %(where_clause)
     """ % locals()
 
     db = connect_db('bob_live_ae')          # This one only in ae
