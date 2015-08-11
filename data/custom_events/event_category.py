@@ -78,9 +78,9 @@ def _step2(cat_list):
     where_clause = 'where cat.name in (%s)' % str(cat_list).strip('[]')
 
     query = """
-    SELECT conf.sku, cat.name
-    FROM catalog_config conf JOIN catalog_config_has_catalog_category cc
-    ON cc.fk_catalog_config = conf.id_catalog_config
+    SELECT conf.sku, cat.name FROM catalog_config conf
+    JOIN catalog_config_has_catalog_category cc ON cc.fk_catalog_config = conf.id_catalog_config
+    JOIN catalog_category cat on cc.fk_catalog_category = cat.id_catalog_category
     %(where_clause)s
     """ % locals()
 
