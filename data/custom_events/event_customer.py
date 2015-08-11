@@ -1,12 +1,12 @@
 """
-Sub algorithm to get the customer set from database
+Event algorithm to get the customer set from database
 """
-from ..sql_data import connect_db
+from . import connect_db
 
-def get_customers(mode):
-    """
-    Get customers form the database
-    Follows the query_event specifications
+def get_customer(mode):
+    """ Follows the query_event specifications
+
+    Get customers from the database
     :param mode: Any one of
         1. 'all': no discrimination on region, default
         2. 'uae': UAE customers
