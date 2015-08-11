@@ -4,6 +4,7 @@ import csv
 from sheet import updateAction, updateLink
 import requests
 import ftplib
+from custom_events.main import execute_pipeline
 
 
 ftp = ftplib.FTP("jlabs.co")
@@ -13,6 +14,8 @@ ftp.cwd("/jlabs_co/wadi/query_results")
 def upload_file(filename, path):
     ftp.storlines("STOR "+filename, open(path))
 
+# Old code, deprecated
+'''
 def remove_duplicates(data):
     """Remove duplicates from the csv data list, prefer phones with arabic language attachment
     This algorithm assumes that phones are the first column and language is the second one"""
@@ -68,6 +71,7 @@ def mega_query_save_to_file(queries, filename):
         writer = csv.writer(cfile)
         writer.writerow(["Phone", "Language"])
         writer.writerows(final)
+'''
 
 def save_to_file(lst_obj, filename):
     print "Query executed, writing file"
@@ -94,7 +98,8 @@ def work_external_data(event):
             print "Got query"+query
             save_to_file(cursor, filename_full)
         elif 'pipeline' in rdata and 'options' in rdata:
-            pass
+            res = execute_pipeline(rdata['pipeline'], rdata['options'])
+            save_to_file(res, filename_full)
         else:
             print "Error"
             return
