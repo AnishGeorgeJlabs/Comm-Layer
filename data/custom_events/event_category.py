@@ -63,7 +63,7 @@ def _step1_partial(dbname):
 
     def mapper(tpl):
         res = list(tpl)
-        res[1] = res[1].split('-')[1]
+        res[1] = res[1].split('-')[0]
         return res
 
     result = map(
