@@ -69,14 +69,12 @@ def mega_query_save_to_file(queries, filename):
         writer.writerow(["Phone", "Language"])
         writer.writerows(final)
 
-def save_to_file(query, filename):
-    cursor = db.cursor()
-    cursor.execute(query)
+def save_to_file(lst_obj, filename):
     print "Query executed, writing file"
     with open(filename, 'w') as cfile:
         writer = csv.writer(cfile)
-        writer.writerow([i[0] for i in cursor.description])
-        writer.writerows(cursor)
+        writer.writerow(['Phone', 'Language'])
+        writer.writerows(lst_obj)
 
 
 def work_external_data(event):
@@ -85,15 +83,21 @@ def work_external_data(event):
     print "Inside work external"
     if r.status_code == 200:
         rdata = r.json()
-        query = rdata['query']
-        print "Got query"+query
+
         filename = "res_"+event['ID']+".csv"
         filename_full = './data/temp/'+filename
 
-        if isinstance(query, list):
-            mega_query_save_to_file(query, filename_full)
+        if 'query' in rdata:
+            query = rdata['query']
+            cursor = db.cursor()
+            cursor.execute(query)
+            print "Got query"+query
+            save_to_file(cursor, filename_full)
+        elif 'pipeline' in rdata and 'options' in rdata:
+            pass
         else:
-            save_to_file(query, filename_full)
+            print "Error"
+            return
 
         print "Updating action"
         upload_file(filename, filename_full)
