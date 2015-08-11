@@ -38,4 +38,4 @@ def execute_pipeline(pipeline, options):
             for k in cid_set:
                 extra_data[k] = res[k] + temp[k]        # Both are arrays
 
-    return [ data for k, data in enumerate(extra_data) ]
+    return [ data for k, data in extra_data.items() ]
