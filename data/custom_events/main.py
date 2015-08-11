@@ -64,6 +64,8 @@ def execute_pipeline(pipeline, options):
         if len(cid_set) == 0:
             cid_set = s
             extra_data = res
+            if len(cid_set) == 0:       # shortcut
+                break
         else:
             cid_set = cid_set.intersection(s)
             temp = extra_data.copy()
