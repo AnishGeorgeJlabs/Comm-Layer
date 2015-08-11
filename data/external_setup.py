@@ -31,39 +31,39 @@ def remove_duplicates(data):
     return [[k] + row for k, row in sorting_dict.items()]
 
 def complete_event(query_event):
-    for query_obj in query_event:
-        cursor = connect_db(query_obj['db'])
-        cursor.exectue(query_obj['query'])
-        pass
-    return cursor
+
+    pass
 
 def mega_query_save_to_file(queries, filename):
-    """We have multiple queries, get result of each and intersect"""
-    #cursor = db.cursor()
-    res_list = []
+    """ The mega complicated process, doc pending
+
+    :param queries:
+    :param filename:
+    :return:
+    """
 
     # Super algorithm, God knows how much time it will take
+    extra_data = []         # A list of dicts { id_customer: [array of data] }
+    cid_set = set()
     for query_event in queries:
+        k, res = complete_event(query_event)        # Following event specs
 
-        '''
-        cursor = connect_db(query_obj['db'])
-        cursor.execute(query_obj['query'])
-        '''
-        cursor = complete_event(query_event)            # God knows
-        # convert cursor to list
-        res_list.append(set(
-            map(
-                lambda arr: reduce(lambda s, k: s+str(k)+'|', arr, '').strip('|'),
-                list(cursor)
-            ))
-        )
+        cid_set.intersection(k)
+        if len(cid_set) == 0:   # Short circuit to save calculation
+            break
 
-    result = map(lambda st: st.split('|'),
-                 reduce(lambda a, b: a.intersection(b), res_list))
-    # The algorithm has been tested
-    # Note, need to see if json.loads and dumps is better than using this kind of stringification
-    final = remove_duplicates(result)
+        extra_data.append(res)
 
+
+    final = []
+    for k in cid_set:
+        data = []
+        for ed in extra_data:
+            data = ed[k] + data     # Prepend to get reverse pipeline
+        final.append(data)          # if all is well, phone and language will be first
+
+    # Note, at this point, we need a list[list] structure
+    # final = remove_duplicates(result)
     with open(filename, 'w') as cfile:
         writer = csv.writer(cfile)
         writer.writerow(["Phone", "Language"])

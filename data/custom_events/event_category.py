@@ -25,7 +25,7 @@ def get_category(mode, cat_list):
         sku = tpl[1]
         cid = tpl[0]
         if sku in r2 and cid not in result:
-            data = tpl[2:]
+            data = list(tpl[2:])
             data.append(r2[sku])        # Add the category as well
             result[cid] = data
             keys.add(cid)
