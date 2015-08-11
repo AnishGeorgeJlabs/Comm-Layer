@@ -41,5 +41,6 @@ def get_customer(mode):
     keys = set()
     for tpl in list(cursor):
         result[tpl[0]] = list(tpl[1:])
+        keys.add(tpl[0])
 
     return keys, result
