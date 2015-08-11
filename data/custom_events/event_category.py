@@ -1,5 +1,7 @@
 """
 Event algorithm to get the category match from database
+
+Tested on Tue, 11 Aug, 08:28 PM
 """
 from . import connect_db
 

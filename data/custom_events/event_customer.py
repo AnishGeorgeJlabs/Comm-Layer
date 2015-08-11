@@ -1,6 +1,9 @@
 """
 Event algorithm to get the customer set from database
+
+Tested on Tue, 11 Aug, 08:27 PM
 """
+
 from . import connect_db
 
 def get_customer(mode):
