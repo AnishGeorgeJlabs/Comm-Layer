@@ -58,7 +58,7 @@ def _step1_partial(dbname):
     cursor.execute(query)
     result = list(cursor)
     for tpl in result:
-        tpl[0] = tpl[0].split('-')[0]       # Remove -config from sku
+        tpl[1] = tpl[1].split('-')[1]       # Remove -config from sku
     return result
 
 def _step2(cat_list):
