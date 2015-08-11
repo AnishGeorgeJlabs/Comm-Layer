@@ -56,9 +56,19 @@ def _step1_partial(dbname):
     db = connect_db(dbname)
     cursor = db.cursor()
     cursor.execute(query)
-    result = list(cursor)
+    '''
     for tpl in result:
         tpl[1] = tpl[1].split('-')[1]       # Remove -config from sku
+    '''
+
+    def mapper(tpl):
+        res = list(tpl)
+        res[1] = res[1].split('-')[1]
+
+    result = map(
+        mapper,
+        list(cursor)
+    )
     return result
 
 def _step2(cat_list):
