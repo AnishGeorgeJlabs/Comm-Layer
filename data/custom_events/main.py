@@ -4,6 +4,8 @@ Root algorithm for event queries
 import event_category
 import event_customer
 import event_item_count
+import event_payment_method
+import event_repeat_buyer
 import aux
 
 
@@ -11,6 +13,8 @@ drivers = {
     'category': event_category.operate,
     'customer': event_customer.operate,
     'item_count': event_item_count.operate,
+    'payment_method': event_payment_method.operate,
+    'repeat_buyer': event_repeat_buyer.operate
 }
 
 def _execute_event(operation, mode, options):

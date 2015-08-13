@@ -53,6 +53,11 @@ currently, it can have any of the following values
             1. innovate
             2. postpayment
             3. nopayment
+
+## repeat_buyer
+    Filters the total times of repeat buying
+    Require options
+        * repeat_buyer: A string giving limits for frequency, exampls '1 time', '1 - 10 times', 'more than 10 times'
 """
 __author__ = 'basso'
 from sql_data import connect_db
