@@ -16,7 +16,7 @@ the function was never called and its operation never in the pipeline
 ## query_event_driver specification
 A Function (preferably named 'operate') which has
     1. Parameters: (dict)
-    2. Return type: (set, dict)
+    2. Return type: (set, dict, list)
 The parameter dict is the options object we receive from external API. The function MUST execute the paired query_event
 at some point using the options dict and return the results of that call directly. The function may short circuit the
 query_event and return a base case result if it deems it necessary.

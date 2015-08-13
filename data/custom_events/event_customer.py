@@ -2,12 +2,14 @@
 Event algorithm to get the customer set from database
 
 Tested on Tue, 11 Aug, 08:27 PM
+
+Restested for new header specs and refactor on Thu, 13 Aug, 11:33 PM
 """
 
 from . import connect_db
 import aux
 
-def operate(options):
+def operate(mode, options):
     """ Driver for the main get_customer method
     Implements the query_event_driver specification
 
@@ -17,7 +19,7 @@ def operate(options):
     """
 
     # Recoverable options
-    mode = aux.get_mode(options)
+    # mode = aux.get_mode(options)
 
     return get_customer(mode)
 

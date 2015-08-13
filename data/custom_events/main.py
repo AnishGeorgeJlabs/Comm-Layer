@@ -4,6 +4,7 @@ Root algorithm for event queries
 import event_category
 import event_customer
 import event_item_count
+import aux
 
 
 drivers = {
@@ -12,11 +13,11 @@ drivers = {
     'item_count': event_item_count.operate,
 }
 
-def _execute_event(operation, options):
+def _execute_event(operation, mode, options):
     print "Executing operation ", operation
     try:
         if operation in drivers:
-            return drivers[operation](options)
+            return drivers[operation](mode, options)
         else:
             print "Unimplemented operation: "+operation
             return None, None, None
@@ -43,9 +44,10 @@ def execute_pipeline(pipeline, options):
     cid_set = set()
     extra_data = {}
     main_headers = []
+    mode = aux.get_mode(options)
 
     for operation in pipeline:
-        s, res, headers = _execute_event(operation, options)
+        s, res, headers = _execute_event(operation, mode, options)
         if s is None:                           # In case of unimplemented operation, we move on to next
             continue
         print "Got resulting set length ", len(s)

@@ -2,13 +2,15 @@
 Event algorithm to get the category match from database
 
 Tested on Tue, 11 Aug, 08:28 PM
+
+Retested for new header specs and refactor on Thu, 13 Aug, 11:34 PM
 """
 from . import connect_db
 import json
 import aux
 
 headers = ['Order Number', 'Grand Total', 'Category']
-def operate(options):
+def operate(mode, options):
     """ Driver for the main get_category method
     Implements the query_event_driver specification
 
@@ -18,9 +20,6 @@ def operate(options):
     :param options: The actual options object we got from the api
     :return: Same as get_category
     """
-
-    # Recoverable options
-    mode = aux.get_mode(options)
 
     if 'cat_list' not in options or len(options['cat_list']) == 0:
         return None, None, None

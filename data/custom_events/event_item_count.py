@@ -1,20 +1,20 @@
 """
 Event algorithm to get customer ids from the database based on the number of items they purchased
+
+Tested on Thu, 13 Aug, 11:33 PM
 """
 
 from . import connect_db
 import aux
 import re
 
-def operate(options):
+def operate(mode, options):
     """ Driver for get_item
     Implements the query_event_driver specification
 
     :param options: Options dictionary
     :return: same as get_item
     """
-    mode = aux.get_mode(options)
-
     if 'item_count' not in options:
         item_count = '1-2'
     else:
