@@ -7,6 +7,7 @@ from . import connect_db
 import json
 import aux
 
+headers = ['Order Number', 'Grand Total', 'Category']
 def operate(options):
     """ Driver for the main get_category method
     Implements the query_event_driver specification
@@ -22,7 +23,7 @@ def operate(options):
     mode = aux.get_mode(options)
 
     if 'cat_list' not in options or len(options['cat_list']) == 0:
-        return set(), {}
+        return set(), {}, headers
     else:
         return get_category(mode, options['cat_list'])
 
@@ -36,14 +37,15 @@ def get_category(mode, cat_list):
     :param cat_list: a list of categories to match
     :return: A tuple (
             keys: A set of id_customer,
-            result: A dictionary { id_customer, [additional] }
+            result: A dictionary { id_customer, [additional] },
+            headers: A list of headers
         )
     """
 
     r1 = aux.execute_on_database(mode, _step1)   # id_cutomer | sku | data ...
     r2 = _step2(cat_list)       # { sku : category }
 
-    result = {}
+    result = {}                     # { id: [order_number, grand_total, category]
     keys = set()
     for tpl in r1:
         sku = tpl[1]
@@ -54,7 +56,7 @@ def get_category(mode, cat_list):
             result[cid] = data
             keys.add(cid)
 
-    return keys, result
+    return keys, result, headers
 
 def _step1(dbname):
     """
@@ -62,7 +64,7 @@ def _step1(dbname):
     """
 
     query = """
-    SELECT a.fk_customer, b.sku, a.id_sales_order, a.order_nr, a.grand_total
+    SELECT a.fk_customer, b.sku, a.order_nr, a.grand_total
     FROM sales_order a JOIN sales_order_item b
     ON a.id_sales_order = b.fk_sales_order
     """

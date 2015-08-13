@@ -33,7 +33,8 @@ def get_customer(mode):
         4. 'others': Not implemented
     :return: A tuple (
             keys: A set of id_customer,
-            result: A dictionary { id_customer, [phone, language] }
+            result: A dictionary { id_customer, [phone, language] },
+            headers: A list of headers
         )
     """
 
@@ -57,11 +58,5 @@ def get_customer(mode):
 
     result = {}
     keys = set()
-    aux.convert_to_id_dict(cursor)
-    """
-    for tpl in list(cursor):
-        result[tpl[0]] = list(tpl[1:])
-        keys.add(tpl[0])
-
-    return keys, result
-    """
+    keys, result = aux.convert_to_id_dict(cursor)
+    return keys, result, ['Phone', 'language']

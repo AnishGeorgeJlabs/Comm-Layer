@@ -36,7 +36,8 @@ def get_item(mode, item_count):
         )
 
     init_result = aux.execute_on_database(mode, execute_fn)
-    return aux.convert_to_id_dict(init_result)      # returns the correct and expected format
+    keys, result = aux.convert_to_id_dict(init_result)      # returns the correct and expected format
+    return keys, result, ['Item Count']
 
 
 def _get_where_clause(item_count):

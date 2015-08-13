@@ -41,12 +41,6 @@ def _execute_event(operation, options):
         else:
             print "Unimplemented operation: "+operation
             return None, None
-        '''
-        if operation == 'category':
-            return get_category(options['mode'], options['cat_list'])
-        elif operation == 'customer':
-            return get_customer(options['mode'])
-        '''
     except Exception, e:
         print "Got an exception at execute_query: "+str(e)
         return set(), {}
@@ -69,12 +63,14 @@ def execute_pipeline(pipeline, options):
     print "       and options ", options
     cid_set = set()
     extra_data = {}
+    main_headers = []
 
     for operation in pipeline:
-        s, res = _execute_event(operation, options)
+        s, res, headers = _execute_event(operation, options)
         if s is None:                           # In case of unimplemented operation, we move on to next
             continue
         print "Got resulting set length ", len(s)
+        main_headers = headers + main_headers
         if len(cid_set) == 0:
             cid_set = s
             extra_data = res
@@ -89,4 +85,4 @@ def execute_pipeline(pipeline, options):
             for k in cid_set:
                 extra_data[k] = res[k] + temp[k]        # Both are arrays
 
-    return extra_data.values()
+    return extra_data.values(), main_headers
