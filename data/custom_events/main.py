@@ -18,7 +18,7 @@ drivers = {
     'payment_method': event_payment_method.operate,
     'repeat_buyer': event_repeat_buyer.operate,
     'item_status': event_item_status.operate,
-    'purchase_month': event_month
+    'purchase_month': event_month.operate
 }
 
 def _execute_event(operation, mode, options):
