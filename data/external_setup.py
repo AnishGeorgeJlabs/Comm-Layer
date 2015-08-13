@@ -73,11 +73,11 @@ def mega_query_save_to_file(queries, filename):
         writer.writerows(final)
 '''
 
-def save_to_file(lst_obj, filename):
+def save_to_file(lst_obj, filename, headers):
     print "Query executed, writing file"
     with open(filename, 'w') as cfile:
         writer = csv.writer(cfile)
-        writer.writerow(['Phone', 'Language'])
+        writer.writerow(headers)
         writer.writerows(lst_obj)
 
 
@@ -96,10 +96,10 @@ def work_external_data(event):
             cursor = db.cursor()
             cursor.execute(query)
             print "Got query"+query
-            save_to_file(cursor, filename_full)
+            save_to_file(cursor, filename_full, ['Phone', 'Language'])
         elif 'pipeline' in rdata and 'options' in rdata:
-            res = execute_pipeline(rdata['pipeline'], rdata['options'])
-            save_to_file(res, filename_full)
+            res, headers = execute_pipeline(rdata['pipeline'], rdata['options'])
+            save_to_file(res, filename_full, headers)
         else:
             print "Error"
             return
