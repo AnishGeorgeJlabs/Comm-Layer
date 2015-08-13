@@ -6,9 +6,11 @@ Custom Event based model for super complicated filtering
 ## query_event specification
 A Function which has:
     1. Parameters: Any kind, no restriction
-    2. Return type: (set, dict)
-The first element returned MUST by a set of 'id_customer' entries form the database
-The second element returned MUST by a dict of 'id_customer' entries mapped to a list of extra data i.e. {str, list<str>}
+    2. Return type: (set, dict, list)
+The first element returned MUST be a set of 'id_customer' entries form the database
+The second element returned MUST be a dict of 'id_customer' entries mapped to a list of extra data i.e. {str, list<str>}
+The third element returned MUST be a list of headers. The length of this MUST equal to that of each value in the results
+    second dict
 
 ## query_event_driver specification
 A Function (preferably named 'operate') which has
