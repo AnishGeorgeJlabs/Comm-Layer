@@ -6,6 +6,7 @@ import event_customer
 import event_item_count
 import event_payment_method
 import event_repeat_buyer
+import event_item_status
 import aux
 
 
@@ -14,7 +15,8 @@ drivers = {
     'customer': event_customer.operate,
     'item_count': event_item_count.operate,
     'payment_method': event_payment_method.operate,
-    'repeat_buyer': event_repeat_buyer.operate
+    'repeat_buyer': event_repeat_buyer.operate,
+    'item_status': event_item_status.operate
 }
 
 def _execute_event(operation, mode, options):

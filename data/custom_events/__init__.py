@@ -58,6 +58,11 @@ currently, it can have any of the following values
     Filters the total times of repeat buying
     Require options
         * repeat_buyer: A string giving limits for frequency, exampls '1 time', '1 - 10 times', 'more than 10 times'
+
+## item_status
+    Filters the status of items
+    Require options
+        * item_status: A list of posible item status
 """
 __author__ = 'basso'
 from sql_data import connect_db
