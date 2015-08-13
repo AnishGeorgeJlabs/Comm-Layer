@@ -11,6 +11,8 @@ The first element returned MUST be a set of 'id_customer' entries form the datab
 The second element returned MUST be a dict of 'id_customer' entries mapped to a list of extra data i.e. {str, list<str>}
 The third element returned MUST be a list of headers. The length of this MUST equal to that of each value in the results
     second dict
+The Function MAY return (None, None, None) in which case, its effect will be skiped from the pipeline, as good as if
+the function was never called and its operation never in the pipeline
 
 ## query_event_driver specification
 A Function (preferably named 'operate') which has

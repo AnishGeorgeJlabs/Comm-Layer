@@ -3,6 +3,7 @@ Root algorithm for event queries
 """
 import event_category.operate
 import event_customer.operate
+import event_item_count.operate
 
 
 OPERATIONS = {
@@ -30,7 +31,8 @@ OPTIONS = {
 
 drivers = {
     'category': event_category.operate,
-    'customer': event_customer.operate
+    'customer': event_customer.operate,
+    'item_count': event_item_count.operate,
 }
 
 def _execute_event(operation, options):
@@ -40,7 +42,7 @@ def _execute_event(operation, options):
             return drivers[operation](options)
         else:
             print "Unimplemented operation: "+operation
-            return None, None
+            return None, None, None
     except Exception, e:
         print "Got an exception at execute_query: "+str(e)
         return set(), {}

@@ -1,5 +1,5 @@
 """
-Auxilary helper methods
+Auxiliary helper methods
 """
 
 def get_mode(options):
@@ -32,6 +32,13 @@ def execute_on_database(mode, function):
         return result
 
 def convert_to_id_dict(cursor):
+    """
+    Converts a given list(list) to a dict where the keys are the first element of every original value and the values
+    are lists containing the remaining elements of each of those orignal values
+    e.g. converts [['a', 'anish', 'george'], ['b', 'jibin', 'george']]
+         to       {'a': ['anish', 'george'], 'b': ['jibin', 'george']}
+    The function natively supports using db cursors and makes the necessary list conversions wherever needed
+    """
     result = {}
     keys = set()
     for tpl in list(cursor):
