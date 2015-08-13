@@ -88,7 +88,7 @@ def work_external_data(event):
     if r.status_code == 200:
         rdata = r.json()
 
-        filename = "res_"+event['ID']+".csv"
+        filename = "res_"+str(event['ID'])+".csv"
         filename_full = './data/temp/'+filename
 
         if 'query' in rdata:

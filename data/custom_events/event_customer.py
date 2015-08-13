@@ -5,6 +5,21 @@ Tested on Tue, 11 Aug, 08:27 PM
 """
 
 from . import connect_db
+import aux
+
+def operate(options):
+    """ Driver for the main get_customer method
+    Implements the query_event_driver specification
+
+    Extracts the mode option from the options dict and recovers it if not present, then drives the get_customer method
+    :param options: The actual options object we got from the api
+    :return: Same as get_customer
+    """
+
+    # Recoverable options
+    mode = aux.get_mode(options)
+
+    return get_customer(mode)
 
 def get_customer(mode):
     """ Follows the query_event specifications
@@ -42,8 +57,11 @@ def get_customer(mode):
 
     result = {}
     keys = set()
+    aux.convert_to_id_dict(cursor)
+    """
     for tpl in list(cursor):
         result[tpl[0]] = list(tpl[1:])
         keys.add(tpl[0])
 
     return keys, result
+    """

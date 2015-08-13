@@ -1,8 +1,8 @@
 """
 Root algorithm for event queries
 """
-from event_category import get_category
-from event_customer import get_customer
+import event_category.operate
+import event_customer.operate
 
 
 OPERATIONS = {
@@ -28,13 +28,25 @@ OPTIONS = {
     }
 }
 
+drivers = {
+    'category': event_category.operate,
+    'customer': event_customer.operate
+}
+
 def _execute_event(operation, options):
     print "Executing operation ", operation
     try:
+        if operation in drivers:
+            return drivers[operation](options)
+        else:
+            print "Unimplemented operation: "+operation
+            return None, None
+        '''
         if operation == 'category':
             return get_category(options['mode'], options['cat_list'])
         elif operation == 'customer':
             return get_customer(options['mode'])
+        '''
     except Exception, e:
         print "Got an exception at execute_query: "+str(e)
         return set(), {}
@@ -60,6 +72,8 @@ def execute_pipeline(pipeline, options):
 
     for operation in pipeline:
         s, res = _execute_event(operation, options)
+        if s is None:                           # In case of unimplemented operation, we move on to next
+            continue
         print "Got resulting set length ", len(s)
         if len(cid_set) == 0:
             cid_set = s

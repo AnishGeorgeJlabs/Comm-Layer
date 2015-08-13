@@ -5,6 +5,27 @@ Tested on Tue, 11 Aug, 08:28 PM
 """
 from . import connect_db
 import json
+import aux
+
+def operate(options):
+    """ Driver for the main get_category method
+    Implements the query_event_driver specification
+
+    Checks the options dictionary to see whether all options needed by get_category are present. Tries to recover missing
+    options and if it still wont work, then returns the empty result as expected form get_category short circuiting the
+    query process
+    :param options: The actual options object we got from the api
+    :return: Same as get_category
+    """
+
+    # Recoverable options
+    mode = aux.get_mode(options)
+
+    if 'cat_list' not in options or len(options['cat_list']) == 0:
+        return set(), {}
+    else:
+        return get_category(mode, options['cat_list'])
+
 
 def get_category(mode, cat_list):
     """ Follows the query_event specifications
@@ -19,7 +40,7 @@ def get_category(mode, cat_list):
         )
     """
 
-    r1 = _step1(mode)           # id_cutomer | sku | data ...
+    r1 = aux.execute_on_database(mode, _step1)   # id_cutomer | sku | data ...
     r2 = _step2(cat_list)       # { sku : category }
 
     result = {}
@@ -35,17 +56,7 @@ def get_category(mode, cat_list):
 
     return keys, result
 
-def _step1(mode):
-    if mode == 'uae':
-        return _step1_partial('bob_live_ae')
-    elif mode == 'ksa':
-        return _step1_partial('bob_live_sa')
-    else:
-        result = _step1_partial('bob_live_sa')
-        result += _step1_partial('bob_live_ae')
-        return result
-
-def _step1_partial(dbname):
+def _step1(dbname):
     """
     :return: A List of Tuples, where each tuple 0 index is the id_customer and 1 is sku
     """
