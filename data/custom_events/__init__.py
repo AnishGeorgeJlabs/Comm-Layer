@@ -63,6 +63,11 @@ currently, it can have any of the following values
     Filters the status of items
     Require options
         * item_status: A list of posible item status
+
+## purchase_month
+    Filters on the basis of month of purchase
+    Require options
+        * purchase_month: a list of month numbers
 """
 __author__ = 'basso'
 from sql_data import connect_db
