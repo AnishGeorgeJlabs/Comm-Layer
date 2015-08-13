@@ -1,5 +1,7 @@
 """
 Get customer based on month of purchase
+
+Tested on Fri, 14 Aug, 01:40 AM
 """
 
 import aux

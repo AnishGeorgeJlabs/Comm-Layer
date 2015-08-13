@@ -17,6 +17,7 @@ def operate(mode, options):
         return None, None, None
     else:
         repeat = options['repeat_buyer']
+        return get_repeat(mode, repeat)
 
 def get_repeat(mode, repeat):
     """ Implements the query_event specification
@@ -34,14 +35,17 @@ def get_repeat(mode, repeat):
     return aux.typical_event_routing(mode, query, ['Repeat Frequency'])
 
 def _get_where_clause(repeat):
-    l = re.findall('\d+', repeat)
-    if len(l) == 1 and repeat.lower().startswith("more than"):
-        clause = "total > "+str(l[0])
-    elif len(l) == 1:
-        clause = "total = "+str(l[0])
-    elif len(l) == 2:
-        clause = "total >= %i and total <= %i" %(int(l[0]), int(l[1]))
-    else:
-        clause = "total = 1"
+    try:
+        l = re.findall('\d+', repeat)
+        if len(l) == 1 and repeat.lower().startswith("more than"):
+            clause = "total > "+str(l[0])
+        elif len(l) == 1:
+            clause = "total = "+str(l[0])
+        elif len(l) == 2:
+            clause = "total >= %i and total <= %i" %(int(l[0]), int(l[1]))
+        else:
+            clause = "total = 1"
 
-    return clause
+        return clause
+    except:
+        return "total = 1"
