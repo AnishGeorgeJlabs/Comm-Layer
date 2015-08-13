@@ -6,29 +6,6 @@ import event_customer.operate
 import event_item_count.operate
 
 
-OPERATIONS = {
-    'customer': {
-        'description': 'Get customers, must be the final operation in pipeline',
-        'options required': ['mode']
-    },
-    'category': {
-        'description': 'Filter results based on the category of purchase',
-        'options required': ['mode', 'cat_list']
-    }
-}
-
-OPTIONS = {
-    'mode': {
-        'description': 'Database mode',
-        'valid values': ['all', 'uae', 'ksa'],
-        'required by': ['customer', 'category']
-    },
-    'cat_list': {
-        'description': 'List of categories to check',
-        'required by': 'category'
-    }
-}
-
 drivers = {
     'category': event_category.operate,
     'customer': event_customer.operate,

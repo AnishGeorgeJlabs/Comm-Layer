@@ -32,12 +32,14 @@ def get_item(mode, item_count):
     :return: (keys: set, result: dict > {id_customer, [data]}, headers: list)
     """
     # return set(), {'mode': mode, 'item_count': item_count}      # TODO, need to test
+
     query = """
-    SELECT fk_customer, SUM(DISTINCT(id_sales_order_item)) AS items
-    FROM sales_order_item, sales_order WHERE id_sales_order = fk_sales_order
-    GROUP BY id_sales_order, id_sales_order_item
-    %s
-    """ % (_get_where_clause(item_count))
+    SELECT * FROM(
+        SELECT a.fk_customer, SUM(DISTINCT(b.id_sales_order_item)) AS items
+        FROM sales_order a JOIN sales_order_item b ON a.id_sales_order = b.fk_sales_order
+        GROUP BY a.fk_customer
+    ) as T %s
+    """ %(_get_where_clause(item_count))
 
     ### Get the results
     def execute_fn(dbname):

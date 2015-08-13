@@ -23,7 +23,7 @@ def operate(options):
     mode = aux.get_mode(options)
 
     if 'cat_list' not in options or len(options['cat_list']) == 0:
-        return set(), {}, headers
+        return None, None, None
     else:
         return get_category(mode, options['cat_list'])
 
