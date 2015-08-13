@@ -1,5 +1,7 @@
 """
 Algorithms to get repeat buying frequency and all
+
+Tested on Fri, 14 Aug, 01:48 AM
 """
 import aux
 import re
