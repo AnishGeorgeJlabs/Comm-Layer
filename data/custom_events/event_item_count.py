@@ -7,6 +7,12 @@ import aux
 import re
 
 def operate(options):
+    """ Driver for get_item
+    Implements the query_event_driver specification
+
+    :param options: Options dictionary
+    :return: same as get_item
+    """
     mode = aux.get_mode(options)
 
     if 'item_count' not in options:
@@ -17,6 +23,14 @@ def operate(options):
     return get_item(mode, item_count)
 
 def get_item(mode, item_count):
+    """ Implements the query_event specification
+
+    :param mode: usual mode
+    :param item_count: a string representing the required range, supported values are "1", "n-m", "more than m" where
+    "m" is an integer
+
+    :return: (keys: set, result: dict > {id_customer, [data]}, headers: list)
+    """
     # return set(), {'mode': mode, 'item_count': item_count}      # TODO, need to test
     query = """
     SELECT fk_customer, SUM(DISTINCT(id_sales_order_item)) AS items
