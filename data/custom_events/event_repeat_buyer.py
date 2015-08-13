@@ -33,7 +33,7 @@ def get_repeat(mode, repeat):
 
     return aux.typical_event_routing(mode, query, ['Repeat Frequency'])
 
-def _get_where_clause(repeat)
+def _get_where_clause(repeat):
     l = re.findall('\d+', repeat)
     if len(l) == 1 and repeat.lower().startswith("more than"):
         clause = "total > "+str(l[0])
