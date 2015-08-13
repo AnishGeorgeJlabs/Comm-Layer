@@ -1,9 +1,9 @@
 """
 Root algorithm for event queries
 """
-import event_category.operate
-import event_customer.operate
-import event_item_count.operate
+import event_category
+import event_customer
+import event_item_count
 
 
 drivers = {
