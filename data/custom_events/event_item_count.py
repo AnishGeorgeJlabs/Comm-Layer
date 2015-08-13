@@ -4,7 +4,6 @@ Event algorithm to get customer ids from the database based on the number of ite
 Tested on Thu, 13 Aug, 11:33 PM
 """
 
-from . import connect_db
 import aux
 import re
 
@@ -41,11 +40,12 @@ def get_item(mode, item_count):
     %s
     """ %(_get_having_clause(item_count))
 
+    return aux.typical_event_routing(mode, query, ['Item Count'])
+
+    """
     ### Get the results
     def execute_fn(dbname):
-        db = connect_db(dbname)
-        cursor = db.cursor()
-        cursor.execute(query)
+        cursor = aux.execute_query(query, dbname)
         return map(
             lambda k: list(k),
             list(cursor)
@@ -54,6 +54,7 @@ def get_item(mode, item_count):
     init_result = aux.execute_on_database(mode, execute_fn)
     keys, result = aux.convert_to_id_dict(init_result)      # returns the correct and expected format
     return keys, result, ['Item Count']
+    """
 
 
 def _get_having_clause(item_count):

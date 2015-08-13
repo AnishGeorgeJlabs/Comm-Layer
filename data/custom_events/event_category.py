@@ -5,7 +5,6 @@ Tested on Tue, 11 Aug, 08:28 PM
 
 Retested for new header specs and refactor on Thu, 13 Aug, 11:34 PM
 """
-from . import connect_db
 import json
 import aux
 
@@ -68,9 +67,7 @@ def _step1(dbname):
     ON a.id_sales_order = b.fk_sales_order
     """
 
-    db = connect_db(dbname)
-    cursor = db.cursor()
-    cursor.execute(query)
+    cursor = aux.execute_query(query, dbname)
     '''
     for tpl in result:
         tpl[1] = tpl[1].split('-')[1]       # Remove -config from sku
@@ -100,9 +97,7 @@ def _step2(cat_list):
     %(where_clause)s
     """ % locals()
 
-    db = connect_db('bob_live_ae')          # This one only in ae
-    cursor = db.cursor()
-    cursor.execute(query)
+    cursor = aux.execute_query(query, 'bob_live_ae')        # this one only in ae
 
     result = {}
     for tpl in list(cursor):

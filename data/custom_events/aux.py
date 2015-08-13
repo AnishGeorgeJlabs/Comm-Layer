@@ -1,6 +1,7 @@
 """
 Auxiliary helper methods
 """
+from . import connect_db
 
 def get_mode(options):
     """
@@ -46,3 +47,34 @@ def convert_to_id_dict(cursor):
         keys.add(tpl[0])
 
     return keys, result
+
+def execute_query(query, dbname):
+    """
+    Execute the given query on the given database
+    :param query: SQL query to execute
+    :param dbname: Database to use
+    :return: pymysql cursor with the query executed
+    """
+    db = connect_db(dbname)
+    cursor = db.cursor()
+    cursor.execute(query)
+    return cursor
+
+def typical_event_routing(mode, query, headers):
+    """
+    A typical format for an event function, so refactored it here
+    :param mode: same
+    :param query: compiled query, just the one one to be executed
+    :param headers: final headers
+    :return: Final result for the event process
+    """
+    def execute_fn(dbname):
+        cursor = execute_query(query, dbname)
+        return map(
+            lambda k: list(k),
+            list(cursor)
+        )
+
+    init_result = execute_on_database(mode, execute_fn)
+    keys, result = convert_to_id_dict(init_result)      # returns the correct and expected format
+    return keys, result, headers

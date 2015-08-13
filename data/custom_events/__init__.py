@@ -45,6 +45,14 @@ currently, it can have any of the following values
     Required options:
         * item_count: A string which denotes the item count to checked. Currently supported
             value kinds are : '1', 'm-n', 'more than m' where m and n are integers
+
+## payment_method
+    Filter results for a perticular kind of payment method
+    Required options:
+        * payment_method: A string denoting the exact payment method. Database suppors any of
+            1. innovate
+            2. postpayment
+            3. nopayment
 """
 __author__ = 'basso'
 from sql_data import connect_db

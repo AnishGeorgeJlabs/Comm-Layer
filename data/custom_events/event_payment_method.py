@@ -16,4 +16,10 @@ def operate(mode, options):
 
 
 def get_payment(mode, payment_method):
-    pass
+    query = """
+    SELECT distinct(fk_customer), payment_method
+    FROM sales_order
+    WHERE payment_method = %s""" % payment_method
+
+    return aux.typical_event_routing(mode, query, ['Payment Method'])
+

@@ -6,7 +6,6 @@ Tested on Tue, 11 Aug, 08:27 PM
 Restested for new header specs and refactor on Thu, 13 Aug, 11:33 PM
 """
 
-from . import connect_db
 import aux
 
 def operate(mode, options):
@@ -54,9 +53,7 @@ def get_customer(mode):
     %(where_clause)s
     """ % locals()
 
-    db = connect_db("jerry_live")
-    cursor = db.cursor()
-    cursor.execute(query)
+    cursor = aux.execute_query(query, 'jerry_live')
 
     result = {}
     keys = set()
