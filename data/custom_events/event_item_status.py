@@ -23,10 +23,10 @@ def operate(mode, options):
 
 def get_status(mode, item_status):
     query = """
-    SELECT so.fk_customer, sois.name AS status FROM sales_order so
+    SELECT so.fk_customer, sois.name FROM sales_order so
     JOIN sales_order_item soi ON so.id_sales_order = soi.fk_sales_order
     JOIN sales_order_item_status sois on sois.id_sales_order_item_status = soi.fk_sales_order_item_status
-    WHERE status in (%s)
+    WHERE sois.name in (%s)
     """ % json.dumps(item_status).strip("[]")
 
     return aux.typical_event_routing(mode, query, ['Item Status'])
