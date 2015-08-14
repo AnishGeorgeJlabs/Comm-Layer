@@ -20,10 +20,10 @@ def operate(mode, options):
     :return: Same as get_category
     """
 
-    if 'cat_list' not in options or len(options['cat_list']) == 0:
+    if 'category' not in options or len(options['category']) == 0:
         return None, None, None
     else:
-        return get_category(mode, options['cat_list'])
+        return get_category(mode, options['category'])
 
 
 def get_category(mode, cat_list):

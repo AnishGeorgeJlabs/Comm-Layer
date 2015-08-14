@@ -38,7 +38,7 @@ currently, it can have any of the following values
 ## category
     Filter results based on the category of purchase
     Required options:
-        * cat_list: A non-empty list of categories to be checked
+        * category: A non-empty list of categories to be checked
 
 ## item_count
     Filter results based on the count of items
