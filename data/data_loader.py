@@ -33,7 +33,7 @@ def clean_english(text):
 # ------------------------------------------------
 #-----------------Get Campaign Data---------------
 def get_external_data(id):
-    url = getFileLink(id)
+    url = "http://jlabs.co/wadi/query_results/res_"+str(id)+".csv"
     print "Got url: "+url
     if url == '':
         return []
