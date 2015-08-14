@@ -108,6 +108,6 @@ def work_external_data(event):
         upload_file(filename, filename_full)
         updateAction(event['ID'], 'Data Loaded')
         print "Updating link"
-        updateLink(event['ID'], 'http://jlabs.co/wadi/query_results/'+filename)
+        updateLink(event['ID'], 'http://jlabs.co/downloadcsv.php?file='+filename)
     else:
         updateAction(event['ID'], 'Bad Link')
