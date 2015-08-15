@@ -2,6 +2,7 @@
 Auxiliary helper methods
 """
 from . import connect_db
+import re
 
 def get_mode(options):
     """
@@ -31,6 +32,27 @@ def execute_on_database(mode, function):
         result = function('bob_live_sa')
         result += function('bob_live_ae')
         return result
+
+def extract_limits(input, item):
+    input = input.lower()
+
+    l = sorted(map(
+        lambda k: int(k),
+        re.findall('\d+', input)
+    ))
+
+    if len(l) == 0:
+        return " %s = 1 " % item
+    elif len(l) == 1:
+        if 'more' in input or '>' in input:
+            op = '>'
+        elif 'less' in input or '<' in input:
+            op = '<'
+        else:
+            op = '='
+        return " %s %s %i " % (item, op, l[0])
+    else:
+        return " %s >= %i and %s <= %i " % (item, l[0], item, l[1])
 
 def convert_to_id_dict(cursor):
     """

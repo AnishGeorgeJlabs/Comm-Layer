@@ -32,10 +32,11 @@ def get_repeat(mode, repeat):
     SELECT fk_customer, count(*) as total
     FROM sales_order
     GROUP BY fk_customer
-    HAVING %s""" % _get_where_clause(repeat)
+    HAVING %s""" % aux.extract_limits(input='repeat', item='total')
 
     return aux.typical_event_routing(mode, query, ['Repeat Frequency'])
 
+"""
 def _get_where_clause(repeat):
     try:
         l = re.findall('\d+', repeat)
@@ -51,3 +52,4 @@ def _get_where_clause(repeat):
         return clause
     except:
         return "total = 1"
+"""

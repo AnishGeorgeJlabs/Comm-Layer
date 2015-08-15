@@ -37,8 +37,8 @@ def get_item(mode, item_count):
     FROM sales_order a JOIN sales_order_item b
     ON a.id_sales_order = b.fk_sales_order
     GROUP BY b.fk_sales_order
-    %s
-    """ %(_get_having_clause(item_count))
+    HAVING %s
+    """ % aux.extract_limits(input=item_count, item="items")
 
     return aux.typical_event_routing(mode, query, ['Item Count'])
 
@@ -57,6 +57,7 @@ def get_item(mode, item_count):
     """
 
 
+"""
 def _get_having_clause(item_count):
     base = " HAVING items "
     if item_count == "1":
@@ -78,3 +79,4 @@ def _get_having_clause(item_count):
             aux = "= 1"
 
     return base + aux
+"""
