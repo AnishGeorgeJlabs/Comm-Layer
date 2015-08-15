@@ -71,3 +71,4 @@ currently, it can have any of the following values
 """
 __author__ = 'basso'
 from sql_data import connect_db
+from configuration import createLogger

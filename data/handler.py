@@ -2,9 +2,10 @@
 from data_loader import load_data
 import json
 import pika
-from configuration import config
+from configuration import config, createLogger
 from external_setup import work_external_data
 
+cLogger = createLogger("handler")
 
 def watcher(event, send_sms, log):
     print "Debug: Watcher started ..."
@@ -28,7 +29,7 @@ def watcher(event, send_sms, log):
 
         return True
     except Exception:
-        raise
+        cLogger.exception("handler recovered over the following")
         return False
     finally:
         pass     # cleanup

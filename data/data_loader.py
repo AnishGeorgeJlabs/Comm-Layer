@@ -3,9 +3,11 @@
 # This module does the data downloading part from the csv
 from sheet import updateAction, get_testing_sheet, get_custom_sheet, get_block_sheet, getFileLink
 from sql_data import db
+import json
 import string
 import requests
 import csv
+from configuration import createLogger
 
 QUERRY = {
     "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
@@ -13,6 +15,8 @@ QUERRY = {
     "all_ksa" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer where a.fk_country = 193 order by a.id_customer desc",
     "other" : "select distinct phone,if(language_code='en','English','Arabic') from promotion_subscription WHERE promotion_type LIKE %s"
 }
+
+cLogger = createLogger("data_loader")
 
 # ------------ Helper functions ------------------
 def str_to_hex(text):
@@ -146,7 +150,7 @@ def load_data(event):
         }])
         return True, payloadArr
     except Exception, e:
-        raise
+        cLogger.exception("with event as %s, data_loader crashed", str(event))
         return False, None
     finally:
         updateAction(event['ID'], 'Processing')

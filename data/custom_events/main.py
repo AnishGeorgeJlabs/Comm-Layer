@@ -9,6 +9,9 @@ import event_repeat_buyer
 import event_item_status
 import event_month
 import aux
+from . import createLogger
+
+cLogger = createLogger("custom_events")
 
 
 drivers = {
@@ -47,31 +50,35 @@ def execute_pipeline(pipeline, options):
         of each of these items will be the Phone and language in order. Each of these phones and numbers must
         be sent the sms
     """
-    print "debug: got pipeline ", pipeline
-    print "       and options ", options
-    cid_set = set()
-    extra_data = {}
-    main_headers = []
-    mode = aux.get_mode(options)
+    try:
+        print "debug: got pipeline ", pipeline
+        print "       and options ", options
+        cid_set = set()
+        extra_data = {}
+        main_headers = []
+        mode = aux.get_mode(options)
 
-    for operation in pipeline:
-        s, res, headers = _execute_event(operation, mode, options)
-        if s is None:                           # In case of unimplemented operation, we move on to next
-            continue
-        print "Got resulting set length ", len(s)
-        main_headers = headers + main_headers
-        if len(cid_set) == 0:
-            cid_set = s
-            extra_data = res
-            if len(cid_set) == 0:       # shortcut
-                break
-        else:
-            cid_set = cid_set.intersection(s)
-            temp = extra_data.copy()
-            extra_data = {}
-            if len(cid_set) == 0:       # shortcut
-                break
-            for k in cid_set:
-                extra_data[k] = res[k] + temp[k]        # Both are arrays
+        for operation in pipeline:
+            s, res, headers = _execute_event(operation, mode, options)
+            if s is None:                           # In case of unimplemented operation, we move on to next
+                continue
+            print "Got resulting set length ", len(s)
+            main_headers = headers + main_headers
+            if len(cid_set) == 0:
+                cid_set = s
+                extra_data = res
+                if len(cid_set) == 0:       # shortcut
+                    break
+            else:
+                cid_set = cid_set.intersection(s)
+                temp = extra_data.copy()
+                extra_data = {}
+                if len(cid_set) == 0:       # shortcut
+                    break
+                for k in cid_set:
+                    extra_data[k] = res[k] + temp[k]        # Both are arrays
 
-    return extra_data.values(), main_headers
+        return extra_data.values(), main_headers
+    except Exception:
+        cLogger.exception("execute pipeline crashed with pipeline %s and options %s", str(pipeline), str(options))
+        return [], ['Phone', 'Language']
