@@ -17,65 +17,6 @@ def upload_file(filename, path):
     ftp.storlines("STOR "+filename, open(path))
     ftp.close()
 
-# Old code, deprecated
-'''
-def remove_duplicates(data):
-    """Remove duplicates from the csv data list, prefer phones with arabic language attachment
-    This algorithm assumes that phones are the first column and language is the second one"""
-
-    sorting_dict = {}
-    for row in data:
-        phone = row.pop(0)
-        if phone not in sorting_dict:
-            sorting_dict[phone] = row
-        else:
-            olang = sorting_dict[phone][0].lower()
-            clang = row[0].lower()
-            if olang in 'english' and clang in 'arabic':
-                sorting_dict[phone] = row
-
-    return [[k] + row for k, row in sorting_dict.items()]
-
-def complete_event(query_event):
-
-    pass
-
-def mega_query_save_to_file(queries, filename):
-    """ The mega complicated process, doc pending
-
-    :param queries:
-    :param filename:
-    :return:
-    """
-
-    # Super algorithm, God knows how much time it will take
-    extra_data = []         # A list of dicts { id_customer: [array of data] }
-    cid_set = set()
-    for query_event in queries:
-        k, res = complete_event(query_event)        # Following event specs
-
-        cid_set.intersection(k)
-        if len(cid_set) == 0:   # Short circuit to save calculation
-            break
-
-        extra_data.append(res)
-
-
-    final = []
-    for k in cid_set:
-        data = []
-        for ed in extra_data:
-            data = ed[k] + data     # Prepend to get reverse pipeline
-        final.append(data)          # if all is well, phone and language will be first
-
-    # Note, at this point, we need a list[list] structure
-    # final = remove_duplicates(result)
-    with open(filename, 'w') as cfile:
-        writer = csv.writer(cfile)
-        writer.writerow(["Phone", "Language"])
-        writer.writerows(final)
-'''
-
 def save_to_file(lst_obj, filename, headers):
     print "Query executed, writing file"
     with open(filename, 'w') as cfile:
