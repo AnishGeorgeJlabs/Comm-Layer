@@ -34,6 +34,13 @@ def execute_on_database(mode, function):
         return result
 
 def extract_limits(input, item):
+    """
+    Helper method to extract the min, max limits from a string and convert that to an expression which can be
+    appended to an sql WHERE or HAVING clause
+    :param input: The string containing limits
+    :param item: the column name to be checked with the limits
+    :return: A string which can be appended to a WHERE or HAVING clause and confirms to the limits present in the input
+    """
     input = input.lower()
 
     l = sorted(map(
