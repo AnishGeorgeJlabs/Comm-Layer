@@ -51,9 +51,9 @@ def extract_limits(input, item):
     if len(l) == 0:
         return " %s = 1 " % item
     elif len(l) == 1:
-        if 'more' in input or '>' in input:
+        if any(a in input for a in ['more', 'greater', '>', 'higher']):
             op = '>'
-        elif 'less' in input or '<' in input:
+        elif any(a in input for a in ['less', '<', 'lower']):
             op = '<'
         else:
             op = '='
