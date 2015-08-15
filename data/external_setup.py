@@ -9,12 +9,13 @@ from configuration import createLogger
 
 cLogger = createLogger("external_setup")
 
-ftp = ftplib.FTP("jlabs.co")
-ftp.login("jlab", "coldplay")
-ftp.cwd("/jlabs_co/wadi/query_results")
 
 def upload_file(filename, path):
+    ftp = ftplib.FTP("jlabs.co")
+    ftp.login("jlab", "coldplay")
+    ftp.cwd("/jlabs_co/wadi/query_results")
     ftp.storlines("STOR "+filename, open(path))
+    ftp.close()
 
 # Old code, deprecated
 '''
