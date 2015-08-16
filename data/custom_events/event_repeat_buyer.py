@@ -32,7 +32,7 @@ def get_repeat(mode, repeat):
     SELECT fk_customer, count(*) as total
     FROM sales_order
     GROUP BY fk_customer
-    HAVING %s""" % aux.extract_limits(input='repeat', item='total')
+    HAVING %s""" % aux.extract_limits(input=repeat, item='total')
 
     return aux.typical_event_routing(mode, query, ['Repeat Frequency'])
 
