@@ -54,7 +54,10 @@ def work_external_data(event):
             updateAction(event['ID'], 'Data Loaded')
             print "Updating link"
             updateLink(event['ID'], 'http://jlabs.co/downloadcsv.php?file='+filename)
+            return True
         else:
             updateAction(event['ID'], 'Bad Link')
+            return False
     except Exception:
         cLogger.exception("crashed with event %s", str(event))
+        return False

@@ -24,8 +24,8 @@ def watcher(event, send_sms, log):
                 send_sms(payload)
         elif event['type'] == 'external_setup':
             data = event['data']
-            print "DEBUG: GOT External"
             result = work_external_data(data)
+            print "DEBUG, external event, laoded = "+str(result)
 
         return True
     except Exception:

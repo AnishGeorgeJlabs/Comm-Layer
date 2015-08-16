@@ -47,7 +47,7 @@ def get_customer(mode):
         where_clause = ''
 
     query = """
-    SELECT distinct cust.id_customer, phone.number, if(cust.fk_language=1, 'English', 'Arabic') as language
+    SELECT distinct cust.id_customer, phone.number, if(cust.fk_language=1, 'English', 'Arabic') as language, if(cust.fk_country=3, 'UAE', 'SA') as country
     FROM customer cust INNER JOIN customer_phone phone
     ON phone.fk_customer = cust.id_customer
     %(where_clause)s
@@ -58,4 +58,4 @@ def get_customer(mode):
     result = {}
     keys = set()
     keys, result = aux.convert_to_id_dict(cursor)
-    return keys, result, ['Phone', 'language']
+    return keys, result, ['Phone', 'language', 'Country']
