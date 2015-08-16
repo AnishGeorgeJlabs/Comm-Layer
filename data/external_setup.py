@@ -20,7 +20,7 @@ def upload_file(filename, path):
 def save_to_file(lst_obj, filename, headers):
     print "Query executed, writing file"
     with open(filename, 'w') as cfile:
-        writer = csv.writer(cfile)
+        writer = csv.writer(cfile, quoting=csv.QUOTE_ALL)
         writer.writerow(headers)
         writer.writerows(lst_obj)
 

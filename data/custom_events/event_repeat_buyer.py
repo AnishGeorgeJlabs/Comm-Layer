@@ -2,6 +2,7 @@
 Algorithms to get repeat buying frequency and all
 
 Tested on Fri, 14 Aug, 01:48 AM
+Bug fixed on Sun, 16 Aug, 06:09 PM
 """
 import aux
 import re
