@@ -46,7 +46,7 @@ def get_external_data(id):
         raw = filter(lambda k: len(k) > 0, r.text.split("\n"))[1:]
         reader = csv.reader(raw)
         data = [                        # External file may have additional fields
-            [x[0], x[1]] for x in
+            x[:3] for x in
             list(reader)
         ]
         return data
