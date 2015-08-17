@@ -9,7 +9,7 @@ import json
 
 def operate(mode, options):
     """ Driver for get_platform
-    Implements the quer_event_driver specifications
+    Implements the query_event_driver specifications
     """
 
     if 'platform' not in options:
