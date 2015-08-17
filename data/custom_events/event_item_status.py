@@ -10,10 +10,6 @@ import json
 def operate(mode, options):
     """ Driver for get_status
     Implements the query_event_driver specification
-
-    :param mode:
-    :param options:
-    :return:
     """
 
     if 'item_status' not in options:
