@@ -17,12 +17,12 @@ def operate(mode, options):
     :return: Same as get_customer
     """
 
-    # Recoverable options
-    # mode = aux.get_mode(options)
+    if 'language' in options:       # has to be a string
+        return get_customer(mode, options['language'])
+    else:
+        return get_customer(mode, None)
 
-    return get_customer(mode)
-
-def get_customer(mode):
+def get_customer(mode, language):
     """ Follows the query_event specifications
 
     Get customers from the database
@@ -32,6 +32,7 @@ def get_customer(mode):
         3. 'ksa': KSA customers
         4. 'both': Not implemented
         4. 'others': Not implemented
+    :param language: An optional language
     :return: A tuple (
             keys: A set of id_customer,
             result: A dictionary { id_customer, [phone, language] },
@@ -50,10 +51,15 @@ def get_customer(mode):
     SELECT distinct cust.id_customer, phone.number, if(cust.fk_language=1, 'English', 'Arabic') as language, if(cust.fk_country=3, 'UAE', 'SA') as country
     FROM customer cust INNER JOIN customer_phone phone
     ON phone.fk_customer = cust.id_customer
-    %(where_clause)s
-    """ % locals()
+    %s
+    """ % where_clause
 
-    cursor = aux.execute_query(query, 'jerry_live')
+    if language is not None:
+        fquery = """
+        SELECT * FROM (%s) AS T WHERE language = %s""" % (query, language)
+    else:
+        fquery = query
+    cursor = aux.execute_query(fquery, 'jerry_live')
 
     result = {}
     keys = set()
