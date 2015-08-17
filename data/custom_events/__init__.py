@@ -68,6 +68,14 @@ currently, it can have any of the following values
     Filters on the basis of month of purchase
     Require options
         * purchase_month: a list of month numbers
+
+## platform
+    Filters on the basis of the platform of purchase
+    Required options
+        * platform: a list of platform (strings). Possible values are:
+            1. android
+            2. ios
+            3. web
 """
 __author__ = 'basso'
 from sql_data import connect_db

@@ -1,5 +1,7 @@
 """
 Algorithms to handle platform of purchase
+
+Tested on Mon, 17 Aug, 01:13 PM
 """
 
 import aux
@@ -19,6 +21,11 @@ def operate(mode, options):
     return get_platform(mode, platform)
 
 def get_platform(mode, platform):
+    """ Implements the query_event specification
+    Get filtered results based on the platform of purchase
+    :param platform: a list of platforms
+    :return:
+    """
     query = "SELECT fk_customer, misc FROM sales_order"
 
     def execute_fn(dbname):
