@@ -56,7 +56,7 @@ def get_customer(mode, language):
 
     if language is not None:
         fquery = """
-        SELECT * FROM (%s) AS T WHERE language = %s""" % (query, language)
+        SELECT * FROM (%s) AS T WHERE language = '%s'""" % (query, language)
     else:
         fquery = query
     cursor = aux.execute_query(fquery, 'jerry_live')
