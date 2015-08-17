@@ -56,7 +56,7 @@ def get_external_data(id):
 def getUserData(campaign, id):
     data = []
     clo = campaign.lower()
-    print "inside getUserData, "+clo+", and id: "+id
+    print "inside getUserData, "+clo+", and id: "+str(id)
     if clo in "external":
         data = get_external_data(id)
         print "Got external data: "+str(data)
