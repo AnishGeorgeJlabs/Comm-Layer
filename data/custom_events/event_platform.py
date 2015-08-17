@@ -50,6 +50,6 @@ def get_platform(mode, platform):
 def _get_plat_from_misc(misc):
     d = json.loads(misc)
     if 'platform' in d:
-        return d['platform']
+        return str(d['platform'])
     else:
         return ''
