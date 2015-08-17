@@ -89,48 +89,28 @@ def getUserData(campaign, id):
     return data
 # --------------------------------------------------
 
-# ------------------Update Action-------------------
-# Has now been moved to sheet.py
-"""
-def updateAction(id,action):
-    print "inside updateAction"
-    storage = Storage("creds.dat")
-    credentials = storage.get()
-    if credentials is None or credentials.invalid:
-        flags = tools.argparser.parse_args(args=[])
-        flow = flow_from_clientsecrets("client_secret.json", scope=["https://spreadsheets.google.com/feeds"])
-        credentials = tools.run_flow(flow, storage, flags)
-    if credentials.access_token_expired:
-        credentials.refresh(httplib2.Http())
-    gc = gspread.authorize(credentials)
-    wks = gc.open_by_key('144fuYSOgi8md4n2Ezoj9yNMi6AigoXrkHA9rWIF0EDw')
-    worksheet = wks.get_worksheet(1)
-    val = worksheet.get_all_records()
-    for x in val:
-        if id is x['ID']:
-            rowNum = val.index(x) + 2
-            column = 'I'+str(rowNum)
-            print column
-            worksheet.update_acell(column, str(action))
-"""
-
-
 # --------------------- Main method ------------------------
 def load_data(event):
     try:
         print "Inside Data loader"
-       #print "Event: ", str(event)
         campaign = event['Campaign']
         ar = event['Arabic']
         en = event['English']
-        if 'uae' in campaign.lower():
-            ar += "\nOPTOUT@4782"
-            en += "\nOPTOUT@4782"
 
-        sms_dict = {'ar': str_to_hex(ar), 'en': clean_english(en) }
+        sms_dict_n = {'ar': str_to_hex(ar), 'en': clean_english(en)}       # Normal cases
+        sms_dict_ae = {'ar': str_to_hex(ar+'\nOPTOUT@4782'), 'en': clean_english(en + '\nOPTOUT@4782')}   # for uae cust
+
+        if 'uae' in campaign.lower():
+            sms_dict = sms_dict_ae
+
         payloadArr = []
         data = getUserData(campaign, event['ID'])
         for d in data:
+            if 'external' in campaign.lower() and len(d) > 2 and 'UAE' in d[2]:
+                sms_dict = sms_dict_ae
+            elif 'external' in campaign.lower():
+                sms_dict = sms_dict_n
+
             payload = {}
             if d[1].strip() in "Arabic":
                 message_text = sms_dict['ar']
