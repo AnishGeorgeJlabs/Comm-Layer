@@ -1,5 +1,7 @@
 """
 Algorithm for filtration based on last touch clicked
+
+Tested on Mon, 17 Aug, 03:07 PM
 """
 import aux
 

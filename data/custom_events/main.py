@@ -9,6 +9,7 @@ import event_repeat_buyer
 import event_item_status
 import event_month
 import event_platform
+import event_channel
 import aux
 from . import createLogger
 
@@ -23,7 +24,8 @@ drivers = {
     'repeat_buyer': event_repeat_buyer.operate,
     'item_status': event_item_status.operate,
     'purchase_month': event_month.operate,
-    'platform': event_platform.operate
+    'platform': event_platform.operate,
+    'channel': event_channel.operate
 }
 
 def _execute_event(operation, mode, options):
