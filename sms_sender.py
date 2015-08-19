@@ -19,7 +19,9 @@ def sendSms(payload, log):
             request = urllib2.Request(url, data)
             print "Got payload: ", payload
             wp = urllib2.urlopen(request)
-            if 'OK' in wp.read():
+            res = wp.read()
+            print res
+            if 'OK' in res:
                 log('success')
             else:
                 log('failure')
