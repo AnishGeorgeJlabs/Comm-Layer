@@ -16,7 +16,7 @@ def operate(mode, options):
     if not isinstance(channel, list):
         channel = [channel]
 
-    return get_platform(mode, reduce(lambda a, b: str(a)+'|'+str(b), channel).strip('|'))
+    return get_platform(mode, '|'.join(channel))
 
 def get_platform(mode, regex):
     """ Implements the query_event specification
