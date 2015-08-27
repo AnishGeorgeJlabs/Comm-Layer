@@ -4,6 +4,9 @@ from oauth2client.file import Storage
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client import tools
 import gspread
+import requests
+
+base_url = "http://45.55.72.208/wadi/job_update"  # for external updates
 
 
 def get_worksheet(i):
@@ -20,43 +23,74 @@ def get_worksheet(i):
     wks = gc.open_by_key('144fuYSOgi8md4n2Ezoj9yNMi6AigoXrkHA9rWIF0EDw')
     return wks.get_worksheet(i)
 
+
 def get_scheduler_sheet():
     return get_worksheet(0)
+
 
 def get_testing_sheet():
     return get_worksheet(3)
 
+
 def get_custom_sheet(*args):
-    try:            # Format = cust_<name>_i<index>
+    try:  # Format = cust_<name>_i<index>
         if len(args) > 0:
             idx = int(args[0].split("_")[-1][1:])
-            return get_worksheet(5+idx)
+            return get_worksheet(5 + idx)
         else:
             return get_worksheet(4)
     except:
         print " >> ERROR: malformed custom sheet parameter, returning base custom"
         return get_worksheet(4)
 
-def get_block_sheet():              ## NOTE: Only to be used by blockList.py
+
+def get_block_sheet():  ## NOTE: Only to be used by blockList.py
     return get_worksheet(5)
+
 
 actionAlpha = 'I'
 idAlpha = 'J'
 linkAlpha = 'K'
 
-def updateId(id, row, *arg):
+
+def updateId(id, row, *arg, **kwargs):
+    """
+    Updates the ID
+    :param id: The created ID
+    :param row: sheet row index - 2
+    :param arg: May contain the starting action
+    :param kwargs: May contain 'oid' in which case the api will be notified
+    :return:
+    """
     print 'inside updateId, ', id, row
-    cell = idAlpha+str(row + 2)
+    cell = idAlpha + str(row + 2)
     worksheet = get_scheduler_sheet()
     worksheet.update_acell(cell, id)
     if len(arg) > 0:
-        worksheet.update_acell(actionAlpha+str(row+2), arg[0])
+        worksheet.update_acell(actionAlpha + str(row + 2), arg[0])
+    if 'oid' in kwargs:
+        if len(arg) > 0:
+            adP = "&status="+str(arg[0])
+        else:
+            adP = ''
+        requests.get(base_url + ("?id=%s&t_id=%s" % (kwargs['oid'], str(id))) + adP)
+
 
 def updateLink(id, link):
     updateAux(id, linkAlpha, link)
 
-def updateAction(id, action):
+
+def updateAction(id, action, oid=None):
+    """ Update the Action i.e. Status of the job
+    :param id: The tool's ID for the current job
+    :param action: The current status
+    :param oid: Present only for external jobs. If present, then we also put out a shout to the api,
+                regarding the status
+    """
     updateAux(id, actionAlpha, action)
+    url = base_url + ("?id=%s&status=%s" % (oid, action))
+    requests.get(url)
+
 
 def updateAux(id, col, data):
     worksheet = get_scheduler_sheet()
@@ -65,11 +99,12 @@ def updateAux(id, col, data):
         try:
             if int(id) == int(x['ID']):
                 rowNum = val.index(x) + 2
-                cell = col+str(rowNum)
+                cell = col + str(rowNum)
                 print cell
                 worksheet.update_acell(cell, str(data))
         except:
             print "Some error came"
+
 
 def getFileLink(id):
     worksheet = get_scheduler_sheet()
