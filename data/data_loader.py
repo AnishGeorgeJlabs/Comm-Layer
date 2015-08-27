@@ -1,104 +1,131 @@
 # -*- encoding: utf-8 -*-
 
 # This module does the data downloading part from the csv
-from sheet import updateAction, get_testing_sheet, get_custom_sheet, get_block_sheet, getFileLink
+from sheet import updateAction, get_testing_sheet, get_custom_sheet
 from sql_data import db
-import json
 import string
 import requests
 import csv
 from configuration import createLogger
 
 QUERRY = {
-    "all" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer order by a.id_customer desc",
-    "all_uae" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer where a.fk_country = 3 order by a.id_customer desc",
-    "all_ksa" : "select distinct b.number,if(a.fk_language=1,'English','Arabic') as language from customer a inner join customer_phone b on b.fk_customer = a.id_customer where a.fk_country = 193 order by a.id_customer desc",
-    "other" : "select distinct phone,if(language_code='en','English','Arabic') from promotion_subscription WHERE promotion_type LIKE %s"
+    "all": """SELECT DISTINCT b.number,if(a.fk_language=1,'English','Arabic') AS language
+              FROM customer a INNER JOIN customer_phone b ON b.fk_customer = a.id_customer
+              ORDER BY a.id_customer DESC""",
+    "all_uae": """SELECT DISTINCT b.number,if(a.fk_language=1,'English','Arabic') AS LANGUAGE
+                  FROM customer a INNER JOIN customer_phone b ON b.fk_customer = a.id_customer
+                  WHERE a.fk_country = 3
+                  ORDER BY a.id_customer DESC""",
+    "all_ksa": """SELECT DISTINCT b.number,if(a.fk_language=1,'English','Arabic') AS language
+                  FROM customer a INNER JOIN customer_phone b ON b.fk_customer = a.id_customer
+                  WHERE a.fk_country = 193
+                  ORDER BY a.id_customer DESC""",
+    "other": """SELECT DISTINCT phone,if(language_code='en','English','Arabic')
+                FROM promotion_subscription
+                WHERE promotion_type LIKE %s"""
 }
 
 cLogger = createLogger("data_loader")
 
-# ------------ Helper functions ------------------
+# ---------------------------------------------------- Helper functions ------------------------------------------------
 def str_to_hex(text):
+    """ Converts a string to hex values, used for arabic messages """
     text = text.strip("u").strip("'")
-    arabic_hex = [hex(ord(b)).replace("x","").upper().zfill(4) for b in text]
+    arabic_hex = [hex(ord(b)).replace("x", "").upper().zfill(4) for b in text]
     arabic_hex.append("000A")
     text_update = "".join(arabic_hex)
     return text_update
 
+
 def clean_english(text):
+    """ Converts any possible unicode to its ascii variant else removes unicode from english message """
     # Support for en and em dash which is a common english unicode
     repText = ''.join(map(
         lambda c: '-' if c == u'\u2013' or c == u'\u2014' else c,
         text
     ))
-    filtered_txt = str(filter(lambda k: k in string.printable , repText))
+    filtered_txt = str(filter(lambda k: k in string.printable, repText))
     return filtered_txt
+
+
 # ------------------------------------------------
-#-----------------Get Campaign Data---------------
+# -----------------Get Campaign Data---------------
 def get_external_data(id):
-    url = "http://jlabs.co/wadi/query_results/res_"+str(id)+".csv"
-    print "Got url: "+url
+    """ Get the dataset from external csv file which was initially uploaded by the tool itself :param id: """
+    url = "http://jlabs.co/wadi/query_results/res_" + str(id) + ".csv"
+    print "Got url: " + url
     if url == '':
         return []
     r = requests.get(url)
     if r.status_code == 200:
         raw = filter(lambda k: len(k) > 0, r.text.split("\n"))[1:]
         reader = csv.reader(raw)
-        data = [                        # External file may have additional fields
-            x[:3] for x in
-            list(reader)
-        ]
+        data = [  # External file may have additional fields
+                  x[:3] for x in
+                  list(reader)
+                  ]
         return data
     else:
         return []
 
+
+def get_block_list():
+    """ Get the blocked numbers from jlabs api """
+    r = requests.get('http://45.55.72.208/wadi/block_list?type=phone')
+    if r.status_code != 200:
+        return []
+    data = r.json()
+    if not data.get('success', False):
+        return []
+    else:
+        return data.get('data', [])
+
+
 def getUserData(campaign, id):
+    """ Get the [phone, language] or [phone, language, country] for the customers """
     data = []
     clo = campaign.lower()
-    print "inside getUserData, "+clo+", and id: "+str(id)
-    if clo in "external":
+    print "inside getUserData, " + clo + ", and id: " + str(id)
+    if clo in "external":  # Main priority
         data = get_external_data(id)
-        print "Got external data: "+str(data)
-    elif clo.startswith("all"):       # Actually, all in campaig.lower()
+        print "Got external data: " + str(data)
+    elif clo.startswith("all"):  # Actually, all in campaig.lower()
         print "Starts with all"
-        #cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='jerry_live', host="db02")
         cu = db.cursor()
         cu.execute(QUERRY[clo])
         for x in cu:
             data.append(x)
     elif clo in "testing":
         print "Testing campaign"
-        # data = [["919818261929","Arabic"],["917838310825","English"],["971559052361","Arabic"]]
-        data = get_testing_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
+        data = get_testing_sheet().get_all_values()[1:]  # Gives data in list of list format, skipping the header row
     elif clo in "custom":
         print "Custom campaign"
-        data = get_custom_sheet().get_all_values()[1:]     # Gives data in list of list format, skipping the header row
+        data = get_custom_sheet().get_all_values()[1:]  # Gives data in list of list format, skipping the header row
     elif clo.startswith("cust_"):
         print "starts with cust_"
         data = get_custom_sheet(clo).get_all_values()[1:]
     else:
-        print "Different: "+clo
-        #cx = pymysql.connect(user='maowadi', password='FjvQd3fvqxNhszcU',database='cerberus_live', host="db02")
+        print "Different: " + clo
         cu = db.cursor()
-        cu.execute(QUERRY['other'],campaign)
+        cu.execute(QUERRY['other'], campaign)
         for x in cu:
             data.append(x)
-    blocked_list = set([a[0]+','+a[1] for a in get_block_sheet().get_all_values()[1:]])
+    blocked_list = set([a[0] + ',' + a[1] for a in get_block_list()])
     data = [a for a in data if ','.join([a[0], a[1]]) not in blocked_list]
     return data
-# --------------------------------------------------
 
-# --------------------- Main method ------------------------
+
 def load_data(event):
+    """ Main Method for loading the data """
     try:
         print "Inside Data loader"
         campaign = event['Campaign']
         ar = event['Arabic']
         en = event['English']
 
-        sms_dict_n = {'ar': str_to_hex(ar), 'en': clean_english(en)}       # Normal cases
-        sms_dict_ae = {'ar': str_to_hex(ar+'\nOPTOUT@4782'), 'en': clean_english(en + '\nOPTOUT@4782')}   # for uae cust
+        sms_dict_n = {'ar': str_to_hex(ar), 'en': clean_english(en)}  # Normal cases
+        sms_dict_ae = {'ar': str_to_hex(ar + '\nOPTOUT@4782'),
+                       'en': clean_english(en + '\nOPTOUT@4782')}  # for uae cust
 
         if 'uae' in campaign.lower():
             sms_dict = sms_dict_ae
@@ -114,10 +141,12 @@ def load_data(event):
             payload = {}
             if d[1].strip() in "Arabic":
                 message_text = sms_dict['ar']
-                payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "OL"}
+                payload = {'message': message_text,
+                           'mobilenumber': d[0].strip("=").strip().replace('+', '').replace('-', ''), 'mtype': "OL"}
             elif d[1].strip() in "English":
                 message_text = sms_dict['en']
-                payload = {'message': message_text,'mobilenumber':d[0].strip("=").strip().replace('+','').replace('-',''), 'mtype': "N"}
+                payload = {'message': message_text,
+                           'mobilenumber': d[0].strip("=").strip().replace('+', '').replace('-', ''), 'mtype': "N"}
             payloadArr.append([str(event['ID']), payload])
 
         # Now the sms_sender is responsible for doing the final
@@ -134,10 +163,3 @@ def load_data(event):
         return False, None
     finally:
         updateAction(event['ID'], 'Processing')
-        pass
-# -----------------------------------------------------------
-if __name__ == '__main__':
-    event = {"Campaign":"testing","English":"hahahaha","Arabic":"SubhanAllah"}
-    a,b =  load_data(event)
-    print a
-    print b[9]
