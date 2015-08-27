@@ -48,8 +48,7 @@ def work_external_data(event):
                 res, headers = execute_pipeline(rdata['pipeline'], rdata['options'])
                 save_to_file(res, filename_full, headers)
             else:
-                print "Error"
-                return
+                raise Exception
 
             print "Updating action"
             upload_file(filename, filename_full)
