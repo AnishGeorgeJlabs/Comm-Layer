@@ -27,7 +27,8 @@ def save_to_file(lst_obj, filename, headers):
 
 def work_external_data(event):
     try:
-        url = event['External Link']
+        # url = event['External Link']
+        url = 'http://45.55.72.208/wadi/query?id='+str(event['External Job'])
         r = requests.get(url)
         print "Inside work external"
         if r.status_code == 200:
