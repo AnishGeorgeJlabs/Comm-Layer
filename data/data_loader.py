@@ -162,4 +162,8 @@ def load_data(event):
         cLogger.exception("with event as %s, data_loader crashed", str(event))
         return False, None
     finally:
-        updateAction(event['ID'], 'Processing')
+        if 'external' in event['Campaign'].lower():
+            oid = event['External Job']
+        else:
+            oid = None
+        updateAction(event['ID'], 'Processing', oid=None)

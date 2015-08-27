@@ -68,16 +68,18 @@ def updateId(id, row, *arg, **kwargs):
     worksheet.update_acell(cell, id)
     if len(arg) > 0:
         worksheet.update_acell(actionAlpha + str(row + 2), arg[0])
-    if 'oid' in kwargs:
+    if 'oid' in kwargs and kwargs['oid'] is not None:
         if len(arg) > 0:
-            adP = "&status="+str(arg[0])
+            adP = "&status=" + str(arg[0])
         else:
             adP = ''
         requests.get(base_url + ("?id=%s&t_id=%s" % (kwargs['oid'], str(id))) + adP)
 
 
-def updateLink(id, link):
+def updateLink(id, link, oid=None):
     updateAux(id, linkAlpha, link)
+    if oid is not None:
+        requests.get(base_url + ("?id=%s&file_link=%s" % (oid, link)))
 
 
 def updateAction(id, action, oid=None):
@@ -88,8 +90,9 @@ def updateAction(id, action, oid=None):
                 regarding the status
     """
     updateAux(id, actionAlpha, action)
-    url = base_url + ("?id=%s&status=%s" % (oid, action))
-    requests.get(url)
+    if oid is not None:
+        url = base_url + ("?id=%s&status=%s" % (oid, action))
+        requests.get(url)
 
 
 def updateAux(id, col, data):
