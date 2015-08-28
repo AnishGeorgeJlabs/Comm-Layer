@@ -15,7 +15,6 @@ from . import createLogger
 
 cLogger = createLogger("custom_events")
 
-
 drivers = {
     'category': event_category.operate,
     'customer': event_customer.operate,
@@ -28,17 +27,19 @@ drivers = {
     'channel': event_channel.operate
 }
 
+
 def _execute_event(operation, mode, options):
     print "Executing operation ", operation
     try:
         if operation in drivers:
             return drivers[operation](mode, options)
         else:
-            print "Unimplemented operation: "+operation
+            print "Unimplemented operation: " + operation
             return None, None, None
     except Exception, e:
-        print "Got an exception at execute_query: "+str(e)
+        print "Got an exception at execute_query: " + str(e)
         return set(), {}
+
 
 def execute_pipeline(pipeline, options):
     """ Executes the given pipeline and returns the combined result
@@ -64,25 +65,66 @@ def execute_pipeline(pipeline, options):
 
         for operation in pipeline:
             s, res, headers = _execute_event(operation, mode, options)
-            if s is None:                           # In case of unimplemented operation, we move on to next
+            if s is None:  # In case of unimplemented operation, we move on to next
                 continue
             print "Got resulting set length ", len(s)
             main_headers = headers + main_headers
             if len(cid_set) == 0:
                 cid_set = s
                 extra_data = res
-                if len(cid_set) == 0:       # shortcut
+                if len(cid_set) == 0:  # shortcut
                     break
             else:
                 cid_set = cid_set.intersection(s)
                 temp = extra_data.copy()
                 extra_data = {}
-                if len(cid_set) == 0:       # shortcut
+                if len(cid_set) == 0:  # shortcut
                     break
                 for k in cid_set:
-                    extra_data[k] = res[k] + temp[k]        # Both are arrays
+                    extra_data[k] = res[k] + temp[k]  # Both are arrays
 
         return extra_data.values(), main_headers
     except Exception:
         cLogger.exception("execute pipeline crashed with pipeline %s and options %s", str(pipeline), str(options))
         return [], ['Phone', 'Language']
+
+
+def _execute_sub_pipe(pipeline, cid_set, extra_data, main_headers, options, op_mode="and"):
+    assert isinstance(cid_set, set)
+    assert isinstance(pipeline, list)
+    assert isinstance(extra_data, dict)
+    assert isinstance(main_headers, list)
+    assert isinstance(options, dict)
+
+    for operation in pipeline:
+        s, res, headers = _execute_event(operation, aux.get_mode(options), options)
+        if s is None:  # In case of unimplemented operation, we move on to next
+            continue
+
+        if len(cid_set) == 0:
+            cid_set = s
+            extra_data = res
+            if len(cid_set) == 0:  # shortcut
+                break
+        else:
+
+            if op_mode == "and":
+                cid_set = cid_set.intersection(s)
+            else:
+                cid_set = cid_set.union(s)
+
+            temp = extra_data.copy()
+            extra_data = {}
+            if len(cid_set) == 0:  # shortcut
+                break
+
+            c_empty = ['' for _ in range(len(main_headers))]        # Empty array for those who are not part of current set
+            f_empty = ['' for _ in range(len(headers))]             # Emtpy array for those who are not part of coming set
+
+            for k in cid_set:
+                extra_data[k] = res.get(k, f_empty) + temp.get(k, c_empty)  # Both are arrays
+
+        print "Got resulting set length ", len(s)
+        main_headers = headers + main_headers
+
+        return extra_data, main_headers
