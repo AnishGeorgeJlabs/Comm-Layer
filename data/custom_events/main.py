@@ -44,10 +44,13 @@ def _execute_event(operation, mode, options):
 def execute_pipeline(pipeline, options):
     """ Executes the given pipeline and returns the combined result
 
-    :param pipeline: The pipeline is a an ordered list of operations which
-        are very specific. See OPERATIONS to find valid operations for the pipeline.
-        Note: the 'customer' is a special case operation and should always be the last operation
-              in the pipeline for the system to work correctly
+    :param pipeline: The pipeline is a dictionary of two operation lists:
+        additional: This is an ordered list of operations, whose results will be added together in a union operation
+        required: Results of the operations in this list will be intersected so that the final result satisfies each of
+                  the operation. Also, the result of the 'additional' list of operations will be intersected with.
+      Please note, 'customer' operation is a special case operation and should be the last operation in the 'required' list
+        so that the system may work correctly
+
     :param options: An object of options for the operations in the pipeline. Each operation may require
         certain options to be present. See OPTIONS for the list of valid operations
 
@@ -58,43 +61,52 @@ def execute_pipeline(pipeline, options):
     try:
         print "debug: got pipeline ", pipeline
         print "       and options ", options
-        cid_set = set()
-        extra_data = {}
-        main_headers = []
-        mode = aux.get_mode(options)
 
-        for operation in pipeline:
-            s, res, headers = _execute_event(operation, mode, options)
-            if s is None:  # In case of unimplemented operation, we move on to next
-                continue
-            print "Got resulting set length ", len(s)
-            main_headers = headers + main_headers
-            if len(cid_set) == 0:
-                cid_set = s
-                extra_data = res
-                if len(cid_set) == 0:  # shortcut
-                    break
-            else:
-                cid_set = cid_set.intersection(s)
-                temp = extra_data.copy()
-                extra_data = {}
-                if len(cid_set) == 0:  # shortcut
-                    break
-                for k in cid_set:
-                    extra_data[k] = res[k] + temp[k]  # Both are arrays
+        if isinstance(pipeline, list):          # Supporting the old api for now
+            cid_set, data, headers = _execute_sub_pipe(
+                pipeline=pipeline,
+                cid_set=set(),
+                extra_data=dict(),
+                main_headers=[],
+                options=options,
+                op_mode='and'
+            )
+        else:                                   # New API, pipeline is a dict
+            cid_set, data, headers = _execute_sub_pipe(
+                pipeline=pipeline.get('additional', pipeline.get('or', [])),
+                cid_set=set(),
+                extra_data=dict(),
+                main_headers=[],
+                options=options,
+                op_mode='or'
+            )
+            cid_set, data, headers = _execute_sub_pipe(
+                pipeline=pipeline.get('required', pipeline.get('and', [])),
+                cid_set=cid_set,
+                extra_data=data,
+                main_headers=headers,
+                options=options,
+                op_mode='and'
+            )
 
-        return extra_data.values(), main_headers
+        return data.values(), headers
     except Exception:
         cLogger.exception("execute pipeline crashed with pipeline %s and options %s", str(pipeline), str(options))
         return [], ['Phone', 'Language']
 
 
 def _execute_sub_pipe(pipeline, cid_set, extra_data, main_headers, options, op_mode="and"):
-    assert isinstance(cid_set, set)
-    assert isinstance(pipeline, list)
-    assert isinstance(extra_data, dict)
-    assert isinstance(main_headers, list)
-    assert isinstance(options, dict)
+    """ Executes a single sub-pipeline in the OR fashion or AND fashion
+
+    :param pipeline: An ordered list of operations
+    :param cid_set: A set of the customer ids, from previous sub-pipe or an empty one
+    :param extra_data: A dictionary of customer data, from previous sub-pipe or empty
+    :param main_headers: The current list of headers. from previous sub-pipe or empty
+    :param options: The main options object
+    :param op_mode: Either of 'and' or 'or'
+    :return: Same as a query_event
+    :rtype: (set, dict, list)
+    """
 
     for operation in pipeline:
         s, res, headers = _execute_event(operation, aux.get_mode(options), options)
@@ -118,8 +130,8 @@ def _execute_sub_pipe(pipeline, cid_set, extra_data, main_headers, options, op_m
             if len(cid_set) == 0:  # shortcut
                 break
 
-            c_empty = ['' for _ in range(len(main_headers))]        # Empty array for those who are not part of current set
-            f_empty = ['' for _ in range(len(headers))]             # Emtpy array for those who are not part of coming set
+            c_empty = ['' for _ in range(len(main_headers))]  # Empty array for those who are not part of current set
+            f_empty = ['' for _ in range(len(headers))]  # Emtpy array for those who are not part of coming set
 
             for k in cid_set:
                 extra_data[k] = res.get(k, f_empty) + temp.get(k, c_empty)  # Both are arrays
@@ -127,4 +139,4 @@ def _execute_sub_pipe(pipeline, cid_set, extra_data, main_headers, options, op_m
         print "Got resulting set length ", len(s)
         main_headers = headers + main_headers
 
-        return extra_data, main_headers
+    return cid_set, extra_data, main_headers
