@@ -50,6 +50,7 @@ class WatchJob(object):
     def __init__(self, conf):
         print "Created WatchJob"
         self.conf = conf
+        self._create_event_obj()
 
         if self.conf['Repeat'] == 'Immediately':
             self._emit()
@@ -78,6 +79,16 @@ class WatchJob(object):
             self._set_trigger()
             if not self._crash_recovery():
                 self._set_delay()
+
+    def _create_event_obj(self):
+        self.eventObj = {
+            'Campaign': self.conf['Campaign'],
+            'ID': self.conf['ID'],
+            'Arabic': self.conf['Arabic'],
+            'English': self.conf['English']
+        }
+        if 'External Job' in self.conf:
+            self.eventObj['External Job'] = self.conf['External Job']
 
     def _crash_recovery(self):  # TODO: Update for all repeat conditions
         if self.conf['Repeat'] in _repeated_types:
@@ -163,13 +174,13 @@ class WatchJob(object):
         """ Emit the event to start sending messages """
         print "emitting ", self.conf['ID']
         if self.conf['Repeat'] in _done_action_types:
-            self.conf.update({"Action": "Done"})
+            self.eventObj.update({"Action": "Done"})
         else:
-            self.conf.update({"Action": _correct_out_time(datetime.now()).strftime(_format)})
+            self.eventObj.update({"Action": _correct_out_time(datetime.now()).strftime(_format)})
 
         event = {
             "type": "send_sms",
-            "data": self.conf
+            "data": self.eventObj
         }
         dispatcher.send(signal=SIG, event=event, sender=self)
 
@@ -201,6 +212,7 @@ if __name__ == "__main__":
         'Repeat': 'Immediately',
         'Hour': '3',
         'Minute': '23',
+        'External Job': '5420ces5d013ddat510321cd',
         'Start Date': '_',
         'ID': '1',
         'Action': 'Registered'
