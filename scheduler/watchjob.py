@@ -10,6 +10,7 @@ from tzlocal import get_localzone
 import pytz
 
 import logging
+
 logging.basicConfig()
 
 # Scheduler
@@ -19,20 +20,26 @@ scheduler.start()
 # Dispatcher 
 SIG = 'WatchJob'
 _format = "%m/%d/%Y %H:%M:%S"
-#
 
+# Some constants
 riyadhZone = pytz.timezone('Asia/Riyadh')
 localZone = get_localzone()
+
+_repeated_types = ['Hourly', 'Daily', 'Fortnightly', 'Monthly']
+
 
 def _correct_in_time(dt):
     return riyadhZone.localize(dt).astimezone(localZone)
 
+
 def _correct_out_time(dt):
     return localZone.localize(dt).astimezone(riyadhZone)
+
 
 def register(handler):
     print "Registering handler for WatchJob"
     dispatcher.connect(handler, signal=SIG, sender=dispatcher.Any)
+
 
 class WatchJob(object):
     # global SIG
@@ -64,11 +71,11 @@ class WatchJob(object):
             if not self._crash_recovery():
                 self._set_delay()
 
-    def _crash_recovery(self):
-        if self.conf['Repeat'] == 'Hourly' or self.conf['Repeat'] == 'Daily':
+    def _crash_recovery(self):      # TODO: Update for all repeat conditions
+        if self.conf['Repeat'] in _repeated_types:
             print 'inside crash recovery'
             now = datetime.now()
-            tommorow = datetime.combine (
+            tommorow = datetime.combine(
                 now.date() + timedelta(days=1),
                 datetime.min.time()
             )
@@ -99,9 +106,9 @@ class WatchJob(object):
         else:
             return False
 
-    def _set_delay(self):
+    def _set_delay(self):   # Todo: setup for all repeat types
         if (self.conf['Repeat'] == 'Hourly' or self.conf['Repeat'] == 'Daily') and \
-                self.fDate.date() > datetime.now().date():
+                        self.fDate.date() > datetime.now().date():
             scheduler.add_job(self._schedule, 'date', run_date=self.sDate)
         else:
             self._schedule()
@@ -113,7 +120,7 @@ class WatchJob(object):
             'Arabic': self.conf['Arabic'],
             'English': self.conf['English']
         }
-        self.trigger = {}           # Actual trigger object for the apscheduler
+        self.trigger = {}  # Actual trigger object for the apscheduler
         if self.conf['Campaign'].lower() in "external":
             event = {
                 'type': 'external_setup',
@@ -125,7 +132,8 @@ class WatchJob(object):
         if self.conf['Repeat'] == 'Once':
             self.trigger = DateTrigger(self.fDate)
         elif self.conf['Repeat'] == 'Hourly':
-            self.trigger = CronTrigger(hour='*/'+str(self.conf['Hour']), minute=str(self.fDate.minute))         # Hour is absoulte
+            self.trigger = CronTrigger(hour='*/' + str(self.conf['Hour']),
+                                       minute=str(self.fDate.minute))  # Hour is absoulte
         elif self.conf['Repeat'] == 'Daily':  # Daily
             self.trigger = CronTrigger(hour=str(self.fDate.hour), minute=str(self.fDate.minute))
         else:
@@ -158,10 +166,11 @@ class WatchJob(object):
             self.job.remove()
 
 
-## _-------------------- Testing -------------------------------_ ##
+## -------------------- Testing -------------------------------_ ##
 
 def logFunc(sender, event):
-    print("Event: "+str(event)+"  at "+str(datetime.now()))
+    print("Event: " + str(event) + "  at " + str(datetime.now()))
+
 
 if __name__ == "__main__":
     register(logFunc)
@@ -172,7 +181,7 @@ if __name__ == "__main__":
         'Arabic': "Blah blah blah",
         'English': "Hello, howr you",
         'Repeat': 'Hourly',
-        'Hour': '3',                        # TODO: these are str
+        'Hour': '3',  # TODO: these are str
         'Minute': '23',
         'Start Date': '7/02/2015',
         'ID': '1',
@@ -181,7 +190,7 @@ if __name__ == "__main__":
 
     while True:
         sleep(1)
-    #for i in range(10):
+    # for i in range(10):
     #    sleep(1)
 
     wj.cancelJob()
