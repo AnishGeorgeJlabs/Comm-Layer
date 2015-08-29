@@ -50,6 +50,7 @@ class WatchJob(object):
     def __init__(self, conf):
         print "Created WatchJob"
         self.conf = conf
+
         self.fDate = _correct_in_time(
             datetime.combine(
                 datetime.strptime(self.conf['Start Date'], '%m/%d/%Y'),
@@ -107,6 +108,7 @@ class WatchJob(object):
             return False
 
     def _set_delay(self):   # Todo: setup for all repeat types
+        """ Either schedule the emission right now or delay that """
         if (self.conf['Repeat'] == 'Hourly' or self.conf['Repeat'] == 'Daily') and \
                         self.fDate.date() > datetime.now().date():
             scheduler.add_job(self._schedule, 'date', run_date=self.sDate)
@@ -114,12 +116,7 @@ class WatchJob(object):
             self._schedule()
 
     def _set_trigger(self):
-        self.triggerObj = {
-            'Campaign': self.conf['Campaign'],
-            'ID': self.conf['ID'],
-            'Arabic': self.conf['Arabic'],
-            'English': self.conf['English']
-        }
+        """ Create the cron or date trigger as required """
         self.trigger = {}  # Actual trigger object for the apscheduler
         if self.conf['Campaign'].lower() in "external":
             event = {
@@ -133,7 +130,7 @@ class WatchJob(object):
             self.trigger = DateTrigger(self.fDate)
         elif self.conf['Repeat'] == 'Hourly':
             self.trigger = CronTrigger(hour='*/' + str(self.conf['Hour']),
-                                       minute=str(self.fDate.minute))  # Hour is absoulte
+                                       minute=str(self.fDate.minute))  # Hour is absolute
         elif self.conf['Repeat'] == 'Daily':  # Daily
             self.trigger = CronTrigger(hour=str(self.fDate.hour), minute=str(self.fDate.minute))
         else:
@@ -144,19 +141,21 @@ class WatchJob(object):
         print "curent", str(datetime.now().time())
 
     def _schedule(self):
+        """ Schedule the emission for a future time """
         print "executing _schedule"
         self.job = scheduler.add_job(self._emit, self.trigger)
 
     def _emit(self):
+        """ Emit the event to start sending messages """
         print "emitting ", self.conf['ID']
         if self.conf['Repeat'] == "Once":
-            self.triggerObj.update({"Action": "Done"})
+            self.conf.update({"Action": "Done"})
         else:
-            self.triggerObj.update({"Action": _correct_out_time(datetime.now()).strftime(_format)})
+            self.conf.update({"Action": _correct_out_time(datetime.now()).strftime(_format)})
 
         event = {
             "type": "send_sms",
-            "data": self.triggerObj
+            "data": self.conf
         }
         dispatcher.send(signal=SIG, event=event, sender=self)
 
