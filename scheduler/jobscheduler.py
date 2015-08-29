@@ -114,6 +114,7 @@ def configure_jobs(csvlist):
         _currentJobs = {}
 
 
+# ----------------- Tests ------------------ #
 _t1 = [
     {
         "Campaign": "Test1",

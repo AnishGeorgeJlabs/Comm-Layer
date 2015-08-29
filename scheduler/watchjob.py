@@ -148,12 +148,15 @@ class WatchJob(object):
         print "curent", str(datetime.now().time())
 
     def _schedule(self):
-        """ Schedule the emission for a future time """
+        """ Schedule the emission for a future time
+        Todo: somehow add the action update (DONE) after being ended
+        """
         print "executing _schedule"
         self.job = scheduler.add_job(self._emit, self.trigger)
         if 'End Date' in self.conf:
             cancel_date = _correct_in_time(datetime.strptime(self.conf['End Date'], "%m/%d/%Y")) + timedelta(hours=23,
                                                                                                              minutes=58)
+            print "Have an End Date: "+str(cancel_date.strftime("%d/%m/%Y"))
             scheduler.add_job(self.cancelJob, DateTrigger(cancel_date))
 
     def _emit(self):
@@ -178,24 +181,29 @@ class WatchJob(object):
 
 ## -------------------- Testing -------------------------------_ ##
 
+import pprint
+pp = pprint.PrettyPrinter(indent=2)
+
 def logFunc(sender, event):
-    print("Event: " + str(event) + "  at " + str(datetime.now()))
+    # print("Event: " + str(event) + "  at " + str(datetime.now().strftime("%d/%m/%Y")))
+    print "Got Event at: "+str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    pp.pprint(event)
 
 
 if __name__ == "__main__":
+    print "Now: "+str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     register(logFunc)
     # dispatcher.connect(logFunc, signal=SIG, sender=dispatcher.Any)
     wj = WatchJob({
         'Campaign': 'TestCampaign',
-        'Type': 'SMS',
         'Arabic': "Blah blah blah",
         'English': "Hello, howr you",
-        'Repeat': 'Hourly',
-        'Hour': '3',  # TODO: these are str
+        'Repeat': 'Immediately',
+        'Hour': '3',
         'Minute': '23',
-        'Start Date': '7/02/2015',
+        'Start Date': '_',
         'ID': '1',
-        'Action': '7/02/2015 9:23:00'
+        'Action': 'Registered'
     })
 
     while True:
