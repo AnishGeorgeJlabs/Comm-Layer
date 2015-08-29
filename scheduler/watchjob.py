@@ -26,6 +26,7 @@ riyadhZone = pytz.timezone('Asia/Riyadh')
 localZone = get_localzone()
 
 _repeated_types = ['Hourly', 'Daily', 'Fortnightly', 'Monthly']
+_done_action_types = ['Once', 'Immediately']
 
 
 def _correct_in_time(dt):
@@ -42,21 +43,27 @@ def register(handler):
 
 
 class WatchJob(object):
-    # global SIG
-    # global dispatcher
-    # global scheduler
     global _format
+    global _repeated_types
+    global _done_action_types
 
     def __init__(self, conf):
         print "Created WatchJob"
         self.conf = conf
 
-        self.fDate = _correct_in_time(
-            datetime.combine(
-                datetime.strptime(self.conf['Start Date'], '%m/%d/%Y'),
-                time(int(self.conf['Hour']), int(self.conf['Minute']))
+        if self.conf['Repeat'] == 'Immediately':
+            self._emit()
+            return
+
+        try:
+            self.fDate = _correct_in_time(
+                datetime.combine(
+                    datetime.strptime(self.conf['Start Date'], '%m/%d/%Y'),
+                    time(int(self.conf['Hour']), int(self.conf['Minute']))
+                )
             )
-        )
+        except:
+            self.fDate = localZone.localize(datetime.now())
 
         # Short circuit if we missed our time
         if self.conf['Repeat'] == 'Once' and self.fDate <= localZone.localize(datetime.now()):
@@ -148,7 +155,7 @@ class WatchJob(object):
     def _emit(self):
         """ Emit the event to start sending messages """
         print "emitting ", self.conf['ID']
-        if self.conf['Repeat'] == "Once":
+        if self.conf['Repeat'] in _done_action_types:
             self.conf.update({"Action": "Done"})
         else:
             self.conf.update({"Action": _correct_out_time(datetime.now()).strftime(_format)})
