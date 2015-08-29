@@ -9,7 +9,7 @@ def sendSms(payload, log):
     try:
         if 'sentinel' in payload:
             d = payload['sentinel']
-            updateAction(d['ID'], d['Action'])
+            updateAction(d['ID'], d['Action'], d.get('External Job'))
             print "Finished with job: ", d['ID']
         else:
             values = {'user' : 'WADI.COM', 'passwd' : 'SMS#WADI', 'DR':'Y','Sid':'Jlabs'}

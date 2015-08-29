@@ -1,5 +1,6 @@
 # Main application instance, which will be the producer for the rabbitMQ
 from data_loader import load_data
+from data.sheet import updateAction
 import json
 import pika
 from configuration import config, createLogger
@@ -26,6 +27,9 @@ def watcher(event, send_sms, log):
             data = event['data']
             result = work_external_data(data)
             print "DEBUG, external event, laoded = "+str(result)
+        elif event['type'] == 'update_action':
+            data = event['data']
+            updateAction(data['ID'], event['Action'], event.get('External Job'))
 
         return True
     except Exception:

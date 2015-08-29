@@ -95,17 +95,19 @@ def configure_jobs(csvlist):
             res = _addJob (conf)
             if res is not None:
 
+                '''
                 if 'external' in conf['Campaign'].lower():      # for API notification
                     oid = conf['External Job']
                 else:
                     oid = None
+                '''
+                oid = conf.get('External Job')
 
                 if res[1]:
                     external['update_id'](res[0], i, 'Registered', oid=oid)
                 else:
                     external['update_id'](res[0], i, 'Missed', oid=oid)
 
-        #print "Remaining ", _currentJobs
         for k, remaining in _currentJobs.iteritems():
             remaining.cancelJob()
         _currentJobs = _newJobs

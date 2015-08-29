@@ -48,7 +48,6 @@ class WatchJob(object):
     global _done_action_types
 
     def __init__(self, conf):
-        print "Created WatchJob"
         self.conf = conf
         self._create_event_obj()
 
@@ -90,7 +89,11 @@ class WatchJob(object):
         if 'External Job' in self.conf:
             self.eventObj['External Job'] = self.conf['External Job']
 
-    def _crash_recovery(self):  # TODO: Update for all repeat conditions
+    def _crash_recovery(self):
+        """ Duh!
+
+        Todo: Implement for all repeat types
+        """
         if self.conf['Repeat'] in _repeated_types:
             print 'inside crash recovery'
             now = datetime.now()
@@ -134,7 +137,9 @@ class WatchJob(object):
             self._schedule()
 
     def _set_trigger(self):
-        """ Create the cron or date trigger as required """
+        """ Create the cron or date trigger as required
+        Todo: Implement all repeat types
+        """
         self.trigger = {}  # Actual trigger object for the apscheduler
         if self.conf['Campaign'].lower() in "external":
             event = {
@@ -164,11 +169,24 @@ class WatchJob(object):
         """
         print "executing _schedule"
         self.job = scheduler.add_job(self._emit, self.trigger)
-        if 'End Date' in self.conf:
-            cancel_date = _correct_in_time(datetime.strptime(self.conf['End Date'], "%m/%d/%Y")) + timedelta(hours=23,
-                                                                                                             minutes=58)
-            print "Have an End Date: "+str(cancel_date.strftime("%d/%m/%Y"))
-            scheduler.add_job(self.cancelJob, DateTrigger(cancel_date))
+        if 'End Date' in self.conf and self.conf['End Date'] != '':
+            cancel_date = _correct_in_time(datetime.strptime(self.conf['End Date'], "%m/%d/%Y")) \
+                          + timedelta(hours=23, minutes=58)
+
+            # cancel_date = datetime.now() + timedelta(minutes=3)  # ONLY FOR TESTING
+
+            print "Have an End Date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
+
+            def finish():
+                self.cancelJob()
+                self.eventObj['Action'] = "Done"
+                event = {
+                    "type": "update_action",
+                    "data": self.eventObj
+                }
+                dispatcher.send(signal=SIG, event=event, sender=self)
+
+            scheduler.add_job(finish, DateTrigger(cancel_date))
 
     def _emit(self):
         """ Emit the event to start sending messages """
@@ -193,27 +211,32 @@ class WatchJob(object):
 ## -------------------- Testing -------------------------------_ ##
 
 import pprint
+
 pp = pprint.PrettyPrinter(indent=2)
+now = datetime.now()
+riyadhNow = _correct_out_time(datetime.now())
+
 
 def logFunc(sender, event):
     # print("Event: " + str(event) + "  at " + str(datetime.now().strftime("%d/%m/%Y")))
-    print "Got Event at: "+str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    print "Got Event at: " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     pp.pprint(event)
 
 
 if __name__ == "__main__":
-    print "Now: "+str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    print "Now: " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     register(logFunc)
     # dispatcher.connect(logFunc, signal=SIG, sender=dispatcher.Any)
     wj = WatchJob({
         'Campaign': 'TestCampaign',
         'Arabic': "Blah blah blah",
         'English': "Hello, howr you",
-        'Repeat': 'Immediately',
-        'Hour': '3',
-        'Minute': '23',
+        'Repeat': 'Once',
+        'Hour': str(riyadhNow.hour),
+        'Minute': str((riyadhNow + timedelta(minutes=1)).minute),
         'External Job': '5420ces5d013ddat510321cd',
-        'Start Date': '_',
+        'Start Date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
+        'End Date': '12/1/2015',
         'ID': '1',
         'Action': 'Registered'
     })
