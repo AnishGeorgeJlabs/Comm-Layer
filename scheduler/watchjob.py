@@ -79,7 +79,7 @@ class WatchJob(object):
             if not self._crash_recovery():
                 self._set_delay()
 
-    def _crash_recovery(self):      # TODO: Update for all repeat conditions
+    def _crash_recovery(self):  # TODO: Update for all repeat conditions
         if self.conf['Repeat'] in _repeated_types:
             print 'inside crash recovery'
             now = datetime.now()
@@ -114,7 +114,7 @@ class WatchJob(object):
         else:
             return False
 
-    def _set_delay(self):   # Todo: setup for all repeat types
+    def _set_delay(self):  # Todo: setup for all repeat types
         """ Either schedule the emission right now or delay that """
         if (self.conf['Repeat'] == 'Hourly' or self.conf['Repeat'] == 'Daily') and \
                         self.fDate.date() > datetime.now().date():
@@ -151,6 +151,10 @@ class WatchJob(object):
         """ Schedule the emission for a future time """
         print "executing _schedule"
         self.job = scheduler.add_job(self._emit, self.trigger)
+        if 'End Date' in self.conf:
+            cancel_date = _correct_in_time(datetime.strptime(self.conf['End Date'], "%m/%d/%Y")) + timedelta(hours=23,
+                                                                                                             minutes=58)
+            scheduler.add_job(self.cancelJob, DateTrigger(cancel_date))
 
     def _emit(self):
         """ Emit the event to start sending messages """
