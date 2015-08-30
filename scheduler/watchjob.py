@@ -86,8 +86,9 @@ class WatchJob(object):
             'Arabic': self.conf['Arabic'],
             'English': self.conf['English']
         }
-        if 'External Job' in self.conf:
-            self.eventObj['External Job'] = self.conf['External Job']
+        oid = self.conf.get('External Job', '')
+        if oid != '':
+            self.eventObj['External Job'] = oid
 
     def _crash_recovery(self):
         """ Duh!
@@ -130,7 +131,7 @@ class WatchJob(object):
 
     def _set_delay(self):  # Todo: setup for all repeat types
         """ Either schedule the emission right now or delay that """
-        if (self.conf['Repeat'] == 'Hourly' or self.conf['Repeat'] == 'Daily') and \
+        if (self.conf['Repeat'] in _repeated_types) and \
                         self.fDate.date() > datetime.now().date():
             scheduler.add_job(self._schedule, 'date', run_date=self.sDate)
         else:
@@ -149,13 +150,22 @@ class WatchJob(object):
             print "watch job got External"
             dispatcher.send(signal=SIG, event=event, sender=self)
 
+        hour = self.fDate.hour
+        minute = self.fDate.minute
+
         if self.conf['Repeat'] == 'Once':
             self.trigger = DateTrigger(self.fDate)
         elif self.conf['Repeat'] == 'Hourly':
             self.trigger = CronTrigger(hour='*/' + str(self.conf['Hour']),
-                                       minute=str(self.fDate.minute))  # Hour is absolute
+                                       minute=minute)  # Hour is absolute
         elif self.conf['Repeat'] == 'Daily':  # Daily
-            self.trigger = CronTrigger(hour=str(self.fDate.hour), minute=str(self.fDate.minute))
+            self.trigger = CronTrigger(hour=hour, minute=minute)
+        elif self.conf['Repeat'] == 'Weekly':
+            self.trigger = CronTrigger(day_of_week=self.fDate.weekday(), hour=hour, minute=minute)
+        elif self.conf['Repeat'] == 'Fortnightly':                                                   # This one is totally fucking up
+            self.trigger = CronTrigger(day='*/14', hour=hour, minute=minute)
+        elif self.conf['Repeat'] == 'Monthly':
+            self.trigger = CronTrigger(day=self.fDate.day, hour=hour, minute=minute)
         else:
             self.trigger = DateTrigger(self.fDate)
 
@@ -207,8 +217,14 @@ class WatchJob(object):
         if hasattr(self, 'job'):
             self.job.remove()
 
+    def next_run(self):
+        if hasattr(self, 'job'):
+            return self.job.next_run_time
+        else:
+            return None
 
-## -------------------- Testing -------------------------------_ ##
+
+# -------------------- Testing ------------------------------- #
 
 import pprint
 
@@ -221,6 +237,7 @@ def logFunc(sender, event):
     # print("Event: " + str(event) + "  at " + str(datetime.now().strftime("%d/%m/%Y")))
     print "Got Event at: " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     pp.pprint(event)
+    print ">> Next Run: ", sender.next_run().strftime("%d/%m/%Y %H:%M")
 
 
 if __name__ == "__main__":
@@ -231,7 +248,7 @@ if __name__ == "__main__":
         'Campaign': 'TestCampaign',
         'Arabic': "Blah blah blah",
         'English': "Hello, howr you",
-        'Repeat': 'Once',
+        'Repeat': 'Fortnightly',
         'Hour': str(riyadhNow.hour),
         'Minute': str((riyadhNow + timedelta(minutes=1)).minute),
         'External Job': '5420ces5d013ddat510321cd',
@@ -240,6 +257,7 @@ if __name__ == "__main__":
         'ID': '1',
         'Action': 'Registered'
     })
+    print "First Run: ", wj.next_run().strftime("%d/%m/%Y %H:%M")
 
     while True:
         sleep(1)
