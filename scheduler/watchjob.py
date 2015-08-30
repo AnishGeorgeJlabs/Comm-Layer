@@ -113,7 +113,7 @@ class WatchJob(object):
                         # Add a delay of a day
                         print "Scheduling for next day"
                         scheduler.add_job(self._schedule, 'date', run_date=tommorow)
-                else:
+                elif self.conf['Repeat'] == 'Hourly':
                     chour = int(self.conf['Hour'])
                     diff = now.hour - lastUsed.hour
                     if diff >= chour:
@@ -188,7 +188,7 @@ class WatchJob(object):
             print "Have an End Date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
 
             def finish():
-                self.cancelJob()
+                self.cancel_job()
                 self.eventObj['Action'] = "Done"
                 event = {
                     "type": "update_action",
@@ -212,7 +212,7 @@ class WatchJob(object):
         }
         dispatcher.send(signal=SIG, event=event, sender=self)
 
-    def cancelJob(self):
+    def cancel_job(self):
         print "Remove called for campaign ", self.conf['Campaign']
         if hasattr(self, 'job'):
             self.job.remove()
@@ -248,7 +248,7 @@ if __name__ == "__main__":
         'Campaign': 'TestCampaign',
         'Arabic': "Blah blah blah",
         'English': "Hello, howr you",
-        'Repeat': 'Fortnightly',
+        'Repeat': 'Monthly',
         'Hour': str(riyadhNow.hour),
         'Minute': str((riyadhNow + timedelta(minutes=1)).minute),
         'External Job': '5420ces5d013ddat510321cd',
@@ -264,5 +264,5 @@ if __name__ == "__main__":
     # for i in range(10):
     #    sleep(1)
 
-    wj.cancelJob()
+    wj.cancel_job()
     print "DONE"

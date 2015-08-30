@@ -65,7 +65,7 @@ def _addJob (conf):
     elif conf['Action'].strip() == "" and conf['ID'] in _currentJobs:   #_currentJobs.has_key(conf['ID']):
             print " c2. Cleared Action"
             # restart job
-            _currentJobs[conf['ID']].cancelJob()        # Cancel the job
+            _currentJobs[conf['ID']].cancel_job()        # Cancel the job
             return helper()
 
     elif conf['ID'] not in _currentJobs:   #not _currentJobs.has_key(conf['ID']):           # Event of a crash
@@ -109,7 +109,7 @@ def configure_jobs(csvlist):
                     external['update_id'](res[0], i, 'Missed', oid=oid)
 
         for k, remaining in _currentJobs.iteritems():
-            remaining.cancelJob()
+            remaining.cancel_job()
         _currentJobs = _newJobs
         _newJobs = {}
     else:
