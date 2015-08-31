@@ -163,7 +163,7 @@ class WatchJob(object):
         elif self.conf['Repeat'] == 'Weekly':
             self.trigger = CronTrigger(day_of_week=self.fDate.weekday(), hour=hour, minute=minute)
         elif self.conf['Repeat'] == 'Fortnightly':                                                   # This one is totally fucking up
-            self.trigger = CronTrigger(day='*/14', hour=hour, minute=minute)
+            self.trigger = DateTrigger(self.fDate)
         elif self.conf['Repeat'] == 'Monthly':
             self.trigger = CronTrigger(day=self.fDate.day, hour=hour, minute=minute)
         else:
@@ -173,13 +173,13 @@ class WatchJob(object):
         print "Created trigger", self.trigger
         print "curent", str(datetime.now().time())
 
-    def _schedule(self):
+    def _schedule(self, create_cancel=True):
         """ Schedule the emission for a future time
         Todo: somehow add the action update (DONE) after being ended
         """
         print "executing _schedule"
         self.job = scheduler.add_job(self._emit, self.trigger)
-        if 'End Date' in self.conf and self.conf['End Date'] != '':
+        if 'End Date' in self.conf and self.conf['End Date'] != '' and create_cancel:
             cancel_date = _correct_in_time(datetime.strptime(self.conf['End Date'], "%m/%d/%Y")) \
                           + timedelta(hours=23, minutes=58)
 
@@ -210,6 +210,12 @@ class WatchJob(object):
             "type": "send_sms",
             "data": self.eventObj
         }
+
+        if self.conf['Repeat'] == 'Fortnightly':
+            print "Additional emit condition"
+            self.trigger = DateTrigger(datetime.now() + timedelta(days=14))
+            self._schedule(create_cancel=False)
+
         dispatcher.send(signal=SIG, event=event, sender=self)
 
     def cancel_job(self):
@@ -237,7 +243,7 @@ def logFunc(sender, event):
     # print("Event: " + str(event) + "  at " + str(datetime.now().strftime("%d/%m/%Y")))
     print "Got Event at: " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     pp.pprint(event)
-    print ">> Next Run: ", sender.next_run().strftime("%d/%m/%Y %H:%M")
+    print ">> Next Run: ", sender.next_run().strftime("%a %d/%m/%Y %H:%M")
 
 
 if __name__ == "__main__":
@@ -248,7 +254,7 @@ if __name__ == "__main__":
         'Campaign': 'TestCampaign',
         'Arabic': "Blah blah blah",
         'English': "Hello, howr you",
-        'Repeat': 'Monthly',
+        'Repeat': 'Fortnightly',
         'Hour': str(riyadhNow.hour),
         'Minute': str((riyadhNow + timedelta(minutes=1)).minute),
         'External Job': '5420ces5d013ddat510321cd',
@@ -257,7 +263,7 @@ if __name__ == "__main__":
         'ID': '1',
         'Action': 'Registered'
     })
-    print "First Run: ", wj.next_run().strftime("%d/%m/%Y %H:%M")
+    print "First Run: ", wj.next_run().strftime("%a %d/%m/%Y %H:%M")
 
     while True:
         sleep(1)
