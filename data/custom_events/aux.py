@@ -2,6 +2,7 @@
 Auxiliary helper methods
 """
 from . import connect_db
+import requests
 import re
 
 def get_mode(options):
@@ -107,3 +108,20 @@ def typical_event_routing(mode, query, headers):
     init_result = execute_on_database(mode, execute_fn)
     keys, result = convert_to_id_dict(init_result)      # returns the correct and expected format
     return keys, result, headers
+
+
+def get_block_list():
+    """ Get the blocked numbers from jlabs api """
+    r = requests.get('http://45.55.72.208/wadi/block_list?type=phone')
+    if r.status_code != 200:
+        return []
+    data = r.json()
+    if not data.get('success', False):
+        return []
+    else:
+        return data.get('data', [])
+
+def get_block_set():
+    """ Get the blocked list as a set of strings- phone,language """
+    return set(','.join(a[0:2]) for a in get_block_list())
+

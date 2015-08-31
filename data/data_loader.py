@@ -7,6 +7,7 @@ import string
 import requests
 import csv
 from configuration import createLogger
+from custom_events.aux import get_block_set
 
 QUERRY = {
     "all": """SELECT DISTINCT b.number,if(a.fk_language=1,'English','Arabic') AS language
@@ -68,19 +69,6 @@ def get_external_data(id):
     else:
         return []
 
-
-def get_block_list():
-    """ Get the blocked numbers from jlabs api """
-    r = requests.get('http://45.55.72.208/wadi/block_list?type=phone')
-    if r.status_code != 200:
-        return []
-    data = r.json()
-    if not data.get('success', False):
-        return []
-    else:
-        return data.get('data', [])
-
-
 def getUserData(campaign, id):
     """ Get the [phone, language] or [phone, language, country] for the customers """
     data = []
@@ -110,8 +98,8 @@ def getUserData(campaign, id):
         cu.execute(QUERRY['other'], campaign)
         for x in cu:
             data.append(x)
-    blocked_list = set([a[0] + ',' + a[1] for a in get_block_list()])
-    data = [a for a in data if ','.join([a[0], a[1]]) not in blocked_list]
+    blocked_set = get_block_set()
+    data = [a for a in data if ','.join(a[0:2]) not in blocked_set]
     return data
 
 
