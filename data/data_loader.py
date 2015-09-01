@@ -142,7 +142,8 @@ def load_data(event):
         payloadArr.append(['sentinel', {
             'sentinel': {
                 'ID': event['ID'],
-                'Action': event['Action']
+                'Action': event['Action'],
+                'External Job': event.get('External Job')
             }
         }])
         return True, payloadArr
@@ -150,8 +151,4 @@ def load_data(event):
         cLogger.exception("with event as %s, data_loader crashed", str(event))
         return False, None
     finally:
-        if 'external' in event['Campaign'].lower():
-            oid = event['External Job']
-        else:
-            oid = None
-        updateAction(event['ID'], 'Processing', oid=None)
+        updateAction(event['ID'], 'Processing', oid=event.get('External Job'))

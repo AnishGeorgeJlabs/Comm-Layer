@@ -23,7 +23,7 @@ def callback(ch, method, prop, body):
     print "Got sms: "+str(payload)
     if 'sentinel' in payload:
         d = payload['sentinel']
-        updateAction(d['ID'], d['Action'])
+        updateAction(d['ID'], d['Action'], d.get('External Job'))
         print "Finished with job: ", d['ID']
     else:
         log(data[0])("success")
