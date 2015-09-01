@@ -51,7 +51,17 @@ class WatchJob(object):
         self.conf = conf
         self._create_event_obj()
 
+        if self.conf['Campaign'].lower() in "external":
+            event = {
+                'type': 'external_setup',
+                'data': self.conf
+            }
+            print "watch job got External"
+            dispatcher.send(signal=SIG, event=event, sender=self)
+
         if self.conf['Repeat'] == 'Immediately':
+            if self.conf['Campaign'].lower() in 'external':     # TODO, its an ugly hack, needs to be changed
+                scheduler.add_job(self._emit, 'date', run_date=(datetime.now() + timedelta(minutes=1)))
             self._emit()
             return
 
@@ -142,13 +152,6 @@ class WatchJob(object):
         Todo: Implement all repeat types
         """
         self.trigger = {}  # Actual trigger object for the apscheduler
-        if self.conf['Campaign'].lower() in "external":
-            event = {
-                'type': 'external_setup',
-                'data': self.conf
-            }
-            print "watch job got External"
-            dispatcher.send(signal=SIG, event=event, sender=self)
 
         hour = self.fDate.hour
         minute = self.fDate.minute
@@ -219,7 +222,7 @@ class WatchJob(object):
         dispatcher.send(signal=SIG, event=event, sender=self)
 
     def cancel_job(self):
-        print "Remove called for campaign ", self.conf['Campaign']
+        print "Remove called for campaign %s with id %s" % (self.conf['Campaign'], str(self.conf['ID']))
         if hasattr(self, 'job'):
             self.job.remove()
 
