@@ -1,4 +1,6 @@
-# Full Scheduler for waid 
+# Full Scheduler for waid
+
+# Okay, we use ID to be ints only
 
 """
 csv object
@@ -32,10 +34,10 @@ def set_id_update(func):
 def set_action_update(func):
     external['update_action'] = func        # (id, action) -> {}
 
-_idList = []
+_idSet = set([])
 _currentJobs = {}
 _newJobs = {}
-_cid = 0
+_cid = 1
 
 """ Add a single Job
 Returns the id """
@@ -44,7 +46,12 @@ def _addJob (conf):
     global _currentJobs
     global _newJobs
     global _cid
-    global _idList
+    global _idSet
+
+    try:
+        conf['ID'] = int(conf['ID'])
+    except:
+        conf['ID'] = 0
 
     def helper():
         jb = watchjob.WatchJob(conf)
@@ -52,11 +59,11 @@ def _addJob (conf):
             _newJobs[conf['ID']] = jb
         return conf['ID'], jb.valid
 
-    if str(conf['ID']).strip() == "":
+    if conf['ID'] == 0:
         print " c1. No ID, new one"
-        while _cid in _idList:
+        while _cid in _idSet:
             _cid += 1
-        conf['ID'] = str(_cid)
+        conf['ID'] = _cid
         _cid += 1
 
         # Validity for job, only if the case is repeat = 'once' else always valid
@@ -71,7 +78,7 @@ def _addJob (conf):
     elif conf['ID'] not in _currentJobs:   #not _currentJobs.has_key(conf['ID']):           # Event of a crash
             print " c3. App crash or tampering"
             return helper()                     # Problematic
-    elif conf['ID'] in _currentJobs: #_currentJobs.has_key(conf['ID']):               # same, transfere
+    elif conf['ID'] in _currentJobs:    #_currentJobs.has_key(conf['ID']):               # same, transfere
             print " c4. Action not cleared, same job, ignore"
             _newJobs[conf['ID']] = _currentJobs.pop(conf['ID'])
             return None
@@ -84,11 +91,11 @@ def configure_jobs(csvlist):
     print " Configuring jobs"
     global _currentJobs
     global _newJobs
-    global _idList
+    global _idSet
     if csvlist:
         for conf in csvlist:
             if conf['ID'] != "":
-                _idList.append(int(conf['ID']))
+                _idSet.add(int(conf['ID']))
         for i, conf in enumerate(csvlist):
             if conf['Action'].lower() in ['done', 'processing', 'missed', 'bad link', 'cancel']:
                 continue

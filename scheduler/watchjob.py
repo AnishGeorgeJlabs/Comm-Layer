@@ -1,5 +1,7 @@
 # main event scheduling system
 
+# Conf['ID'] will always be an int here
+
 from pydispatch import dispatcher
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -60,7 +62,7 @@ class WatchJob(object):
             dispatcher.send(signal=SIG, event=event, sender=self)
 
         if self.conf['Repeat'] == 'Immediately':
-            if self.conf['Campaign'].lower() in 'external':     # TODO, its an ugly hack, needs to be changed
+            if self.conf['Campaign'].lower() in 'external':  # TODO, its an ugly hack, needs to be changed
                 scheduler.add_job(self._emit, 'date', run_date=(datetime.now() + timedelta(minutes=1)))
             self._emit()
             return
@@ -165,7 +167,7 @@ class WatchJob(object):
             self.trigger = CronTrigger(hour=hour, minute=minute)
         elif self.conf['Repeat'] == 'Weekly':
             self.trigger = CronTrigger(day_of_week=self.fDate.weekday(), hour=hour, minute=minute)
-        elif self.conf['Repeat'] == 'Fortnightly':                                                   # This one is totally fucking up
+        elif self.conf['Repeat'] == 'Fortnightly':  # This one is totally fucking up
             self.trigger = DateTrigger(self.fDate)
         elif self.conf['Repeat'] == 'Monthly':
             self.trigger = CronTrigger(day=self.fDate.day, hour=hour, minute=minute)
@@ -222,7 +224,7 @@ class WatchJob(object):
         dispatcher.send(signal=SIG, event=event, sender=self)
 
     def cancel_job(self):
-        print "Remove called for campaign %s with id %s" % (self.conf['Campaign'], str(self.conf['ID']))
+        print "Remove called for campaign %s with id %i" % (self.conf['Campaign'], self.conf['ID'])
         if hasattr(self, 'job'):
             self.job.remove()
 
@@ -231,7 +233,6 @@ class WatchJob(object):
             return self.job.next_run_time
         else:
             return None
-
 
 # -------------------- Testing ------------------------------- #
 
@@ -263,7 +264,7 @@ if __name__ == "__main__":
         'External Job': '5420ces5d013ddat510321cd',
         'Start Date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
         'End Date': '12/1/2015',
-        'ID': '1',
+        'ID': 1,
         'Action': 'Registered'
     })
     print "First Run: ", wj.next_run().strftime("%a %d/%m/%Y %H:%M")

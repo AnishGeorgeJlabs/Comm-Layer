@@ -135,7 +135,7 @@ def load_data(event):
                 message_text = sms_dict['en']
                 payload = {'message': message_text,
                            'mobilenumber': d[0].strip("=").strip().replace('+', '').replace('-', ''), 'mtype': "N"}
-            payloadArr.append([str(event['ID']), payload])
+            payloadArr.append([event['ID'], payload])
 
         # Now the sms_sender is responsible for doing the final
         # update Action saying things are done
