@@ -23,7 +23,6 @@ csv object
 import watchjob
 
 def register(handler):
-    print "jobscheduler.register"
     watchjob.register(handler)
 
 external = {}
@@ -79,7 +78,7 @@ def _addJob (conf):
             print " c3. App crash or tampering"
             return helper()                     # Problematic
     elif conf['ID'] in _currentJobs:    #_currentJobs.has_key(conf['ID']):               # same, transfere
-            print " c4. Action not cleared, same job, ignore"
+            print " c4. Action not cleared, same job, ignore: ", conf['ID']
             _newJobs[conf['ID']] = _currentJobs.pop(conf['ID'])
             return None
     else:   # Dont think we will reach this
@@ -102,13 +101,7 @@ def configure_jobs(csvlist):
             res = _addJob (conf)
             if res is not None:
 
-                '''
-                if 'external' in conf['Campaign'].lower():      # for API notification
-                    oid = conf['External Job']
-                else:
-                    oid = None
-                '''
-                oid = conf.get('External Job')
+                oid = conf.get('External Job') # For API notification
 
                 if res[1]:
                     external['update_id'](res[0], i, 'Registered', oid=oid)
