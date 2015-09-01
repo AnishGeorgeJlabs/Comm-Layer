@@ -1,4 +1,5 @@
 import json
+from job_update_api import update_job_status
 from sql_data import db, connect_db
 import csv
 from sheet import updateAction, updateLink
@@ -46,6 +47,7 @@ def work_external_data(event):
                 save_to_file(cursor, filename_full, ['Phone', 'Language'])
             elif 'pipeline' in rdata and 'options' in rdata:
                 res, headers = execute_pipeline(rdata['pipeline'], rdata['options'])
+                update_job_status(oid, customer_count=len(res))     # Notify the API about the total number of customers
                 save_to_file(res, filename_full, headers)
             else:
                 raise Exception
