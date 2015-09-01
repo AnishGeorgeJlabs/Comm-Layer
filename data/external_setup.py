@@ -54,7 +54,11 @@ def work_external_data(event):
 
             print "Updating action"
             upload_file(filename, filename_full)
-            updateAction(event['ID'], 'Data Loaded', oid=oid)
+            if event.get('Repeat', 'Once') == 'No Send':
+                action = 'Done'
+            else:
+                action = 'Data Loaded'
+            updateAction(event['ID'], action, oid=oid)
             print "Updating link"
             updateLink(event['ID'], 'http://jlabs.co/downloadcsv.php?file='+filename, oid=oid)
             return True
