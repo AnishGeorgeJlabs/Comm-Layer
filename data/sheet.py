@@ -5,9 +5,7 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client import tools
 import gspread
 import requests
-
-base_url = "http://45.55.72.208/wadi/job_update"  # for external updates
-
+from job_update_api import update_job_status
 
 def get_worksheet(i):
     storage = Storage("creds.dat")
@@ -70,16 +68,15 @@ def updateId(id, row, *arg, **kwargs):
         worksheet.update_acell(actionAlpha + str(row + 2), arg[0])
     if 'oid' in kwargs and kwargs['oid'] is not None:
         if len(arg) > 0:
-            adP = "&status=" + str(arg[0])
+            update_job_status(kwargs['oid'], t_id=id, status=str(arg[0]))
         else:
-            adP = ''
-        requests.get(base_url + ("?id=%s&t_id=%s" % (kwargs['oid'], str(id))) + adP)
+            update_job_status(kwargs['oid'], t_id=id)
 
 
 def updateLink(id, link, oid=None):
     updateAux(id, linkAlpha, link)
     if oid is not None:
-        requests.get(base_url + ("?id=%s&file_link=%s" % (oid, link)))
+        update_job_status(oid, file_link=link)
 
 
 def updateAction(id, action, oid=None):
@@ -91,8 +88,7 @@ def updateAction(id, action, oid=None):
     """
     updateAux(id, actionAlpha, action)
     if oid is not None:
-        url = base_url + ("?id=%s&status=%s" % (oid, action))
-        requests.get(url)
+        update_job_status(oid, status=action)
 
 
 def updateAux(id, col, data):
