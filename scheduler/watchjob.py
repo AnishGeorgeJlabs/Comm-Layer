@@ -60,6 +60,8 @@ class WatchJob(object):
             }
             print "watch job got External"
             dispatcher.send(signal=SIG, event=event, sender=self)
+            if self.conf['Repeat'] == 'No Send':
+                return      # No further processing
 
         if self.conf['Repeat'] == 'Immediately':
             if self.conf['Campaign'].lower() in 'external':  # TODO, its an ugly hack, needs to be changed
