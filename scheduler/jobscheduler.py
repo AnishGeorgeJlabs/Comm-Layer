@@ -47,39 +47,34 @@ def _addJob (conf):
     global _cid
     global _idSet
 
-    try:
-        conf['ID'] = int(conf['ID'])
-    except:
-        conf['ID'] = 0
-
     def helper():
         jb = watchjob.WatchJob(conf)
         if jb.valid:
-            _newJobs[conf['ID']] = jb
-        return conf['ID'], jb.valid
+            _newJobs[conf['id']] = jb
+        return conf['id'], jb.valid
 
-    if conf['ID'] == 0:
-        print " c1. No ID, new one"
+    if conf['id'] == 0:
+        print " c1. No id, new one"
         while _cid in _idSet:
             _cid += 1
-        conf['ID'] = _cid
+        conf['id'] = _cid
         _cid += 1
 
         # Validity for job, only if the case is repeat = 'once' else always valid
         return helper()
 
-    elif conf['Action'].strip() == "" and conf['ID'] in _currentJobs:   #_currentJobs.has_key(conf['ID']):
+    elif conf['Action'].strip() == "" and conf['id'] in _currentJobs:   #_currentJobs.has_key(conf['id']):
             print " c2. Cleared Action"
             # restart job
-            _currentJobs[conf['ID']].cancel_job()        # Cancel the job
+            _currentJobs[conf['id']].cancel_job()        # Cancel the job
             return helper()
 
-    elif conf['ID'] not in _currentJobs:   #not _currentJobs.has_key(conf['ID']):           # Event of a crash
+    elif conf['id'] not in _currentJobs:   #not _currentJobs.has_key(conf['id']):           # Event of a crash
             print " c3. App crash or tampering"
             return helper()                     # Problematic
-    elif conf['ID'] in _currentJobs:    #_currentJobs.has_key(conf['ID']):               # same, transfere
-            print " c4. Action not cleared, same job, ignore: ", conf['ID']
-            _newJobs[conf['ID']] = _currentJobs.pop(conf['ID'])
+    elif conf['id'] in _currentJobs:    #_currentJobs.has_key(conf['id']):               # same, transfere
+            print " c4. Action not cleared, same job, ignore: ", conf['id']
+            _newJobs[conf['id']] = _currentJobs.pop(conf['id'])
             return None
     else:   # Dont think we will reach this
             print " c5. case FUCKED"
@@ -95,13 +90,14 @@ def configure_jobs(csvlist):
         for conf in csvlist:
             if conf['ID'] != "":
                 _idSet.add(int(conf['ID']))
-        for i, conf in enumerate(csvlist):
-            if conf['Action'].lower() in ['done', 'processing', 'missed', 'bad link', 'cancel']:
+        for i, config in enumerate(csvlist):
+            conf = _data_map(config)
+            if conf['action'].lower() in ['done', 'processing', 'missed', 'bad link', 'cancel']:
                 continue
             res = _addJob (conf)
             if res is not None:
 
-                oid = conf.get('External Job') # For API notification
+                oid = conf.get('oid') # For API notification
 
                 if res[1]:
                     external['update_id'](res[0], i, 'Registered', oid=oid)
@@ -116,6 +112,34 @@ def configure_jobs(csvlist):
         _currentJobs = {}
 
 
+def _data_map (conf):
+    res = {
+        "repeat": conf['Repeat'],
+        "campaign": conf['Campaign'],
+        "start_date": conf['Start Date'],
+        "hour": conf['Hour'],
+        "minute": conf['Minute'],
+        "english": conf['English'],
+        "arabic": conf['Arabic'],
+        "oid": conf['External Job'],
+        "action": conf['Action'],
+        "id": conf['ID'],
+        "data_link": conf['Data Link']
+    }
+    for key in ['hour', 'minute']:
+        if res[key] == '' or res[key] == '_':
+            res[key] = 0
+        else:
+            try:
+                res[key] = int(res[key])
+            except:
+                res[key] = 0
+    if res['id'] != '':
+        res['id'] = int(res['id'])
+    else:
+        res['id'] = 0
+
+    return res
 # ----------------- Tests ------------------ #
 _t1 = [
     {

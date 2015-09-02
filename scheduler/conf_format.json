@@ -1,0 +1,28 @@
+{
+  "Input format": {
+    "Repeat": "No Send | Immediately | Once | Hourly | Daily | Weekly | Fortnightly | Monthly ",
+    "Campaign": "external, ...",
+    "Start Date": "mm/dd/yyyy",
+    "Hour": "1",
+    "Minute": "45",
+    "English": "..",
+    "Arabic": "...",
+    "External Job": " | sdfsdfsdfsdfsdf",
+    "Action": "Registered | Data Loaded | Bad Link | Processing | Done | <timestamp>",
+    "ID": "52",
+    "Data Link": " or ...."
+  },
+  "System format": {
+    "repeat": "...",
+    "campaign": "...",
+    "start_date": "...",
+    "end_date": "...",
+    "hour": 13,
+    "minute": 45,
+    "english": "..",
+    "arabic": "...",
+    "oid": ".....",
+    "action": "...",
+    "data_link": "...."
+  }
+}

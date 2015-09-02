@@ -1,6 +1,6 @@
 # main event scheduling system
 
-# Conf['ID'] will always be an int here
+# Conf['id'] will always be an int here
 
 from pydispatch import dispatcher
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -53,18 +53,18 @@ class WatchJob(object):
         self.conf = conf
         self._create_event_obj()
 
-        if self.conf['Campaign'].lower() in "external":
+        if self.conf['campaign'].lower() in "external":
             event = {
                 'type': 'external_setup',
                 'data': self.conf
             }
             print "watch job got External"
             dispatcher.send(signal=SIG, event=event, sender=self)
-            if self.conf['Repeat'] == 'No Send':
+            if self.conf['repeat'] == 'No Send':
                 return      # No further processing
 
-        if self.conf['Repeat'] == 'Immediately':
-            if self.conf['Campaign'].lower() in 'external':  # TODO, its an ugly hack, needs to be changed
+        if self.conf['repeat'] == 'Immediately':
+            if self.conf['campaign'].lower() in 'external':  # TODO, its an ugly hack, needs to be changed
                 scheduler.add_job(self._emit, 'date', run_date=(datetime.now() + timedelta(minutes=1)))
             self._emit()
             return
@@ -72,15 +72,15 @@ class WatchJob(object):
         try:
             self.fDate = _correct_in_time(
                 datetime.combine(
-                    datetime.strptime(self.conf['Start Date'], '%m/%d/%Y'),
-                    time(int(self.conf['Hour']), int(self.conf['Minute']))
+                    datetime.strptime(self.conf['start_date'], '%m/%d/%Y'),
+                    time(self.conf['hour'], self.conf['minute'])
                 )
             )
         except:
             self.fDate = localZone.localize(datetime.now())
 
         # Short circuit if we missed our time
-        if self.conf['Repeat'] == 'Once' and self.fDate <= localZone.localize(datetime.now()):
+        if self.conf['repeat'] == 'Once' and self.fDate <= localZone.localize(datetime.now()):
             self.valid = False
             print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
         else:
@@ -95,31 +95,31 @@ class WatchJob(object):
 
     def _create_event_obj(self):
         self.eventObj = {
-            'Campaign': self.conf['Campaign'],
-            'ID': self.conf['ID'],
-            'Arabic': self.conf['Arabic'],
-            'English': self.conf['English']
+            'campaign': self.conf['campaign'],
+            'id': self.conf['id'],
+            'arabic': self.conf['arabic'],
+            'english': self.conf['english']
         }
-        oid = self.conf.get('External Job', '')
+        oid = self.conf.get('oid', '')
         if oid != '':
-            self.eventObj['External Job'] = oid
+            self.eventObj['oid'] = oid
 
     def _crash_recovery(self):
         """ Duh!
 
         Todo: Implement for all repeat types
         """
-        if self.conf['Repeat'] in _repeated_types:
+        if self.conf['repeat'] in _repeated_types:
             print 'inside crash recovery'
             now = datetime.now()
             tommorow = datetime.combine(
                 now.date() + timedelta(days=1),
                 datetime.min.time()
             )
-            # nextHour = (now + timedelta(hours=1)).replace(minute=0, second=0)
+            # nexthour = (now + timedelta(hours=1)).replace(minute=0, second=0)
             try:
-                lastUsed = _correct_in_time(datetime.strptime(self.conf['Action'], _format))
-                if self.conf['Repeat'] == 'Daily':
+                lastUsed = _correct_in_time(datetime.strptime(self.conf['action'], _format))
+                if self.conf['repeat'] == 'Daily':
                     if lastUsed.date() < now.date():
                         print "Scheduling for current day"
                         self._schedule()
@@ -127,16 +127,16 @@ class WatchJob(object):
                         # Add a delay of a day
                         print "Scheduling for next day"
                         scheduler.add_job(self._schedule, 'date', run_date=tommorow)
-                elif self.conf['Repeat'] == 'Hourly':
-                    chour = int(self.conf['Hour'])
+                elif self.conf['repeat'] == 'Hourly':
+                    chour = self.conf['hour']
                     diff = now.hour - lastUsed.hour
                     if diff >= chour:
-                        print "scheduling for current Hour"
+                        print "scheduling for current hour"
                         self._schedule()
                     else:
-                        tHour = (now + timedelta(hours=(chour - diff))).replace(minute=0, second=0)
-                        print "Scheduling for next Hour ", tHour
-                        scheduler.add_job(self._schedule, 'date', run_date=tHour)
+                        thour = (now + timedelta(hours=(chour - diff))).replace(minute=0, second=0)
+                        print "Scheduling for next hour ", thour
+                        scheduler.add_job(self._schedule, 'date', run_date=thour)
                 return True
             except:
                 return False
@@ -145,7 +145,7 @@ class WatchJob(object):
 
     def _set_delay(self):  # Todo: setup for all repeat types
         """ Either schedule the emission right now or delay that """
-        if (self.conf['Repeat'] in _repeated_types) and \
+        if (self.conf['repeat'] in _repeated_types) and \
                         self.fDate.date() > datetime.now().date():
             scheduler.add_job(self._schedule, 'date', run_date=self.sDate)
         else:
@@ -160,18 +160,18 @@ class WatchJob(object):
         hour = self.fDate.hour
         minute = self.fDate.minute
 
-        if self.conf['Repeat'] == 'Once':
+        if self.conf['repeat'] == 'Once':
             self.trigger = DateTrigger(self.fDate)
-        elif self.conf['Repeat'] == 'Hourly':
-            self.trigger = CronTrigger(hour='*/' + str(self.conf['Hour']),
-                                       minute=minute)  # Hour is absolute
-        elif self.conf['Repeat'] == 'Daily':  # Daily
+        elif self.conf['repeat'] == 'Hourly':
+            self.trigger = CronTrigger(hour='*/' + str(self.conf['hour']),
+                                       minute=minute)  # hour is absolute
+        elif self.conf['repeat'] == 'Daily':  # Daily
             self.trigger = CronTrigger(hour=hour, minute=minute)
-        elif self.conf['Repeat'] == 'Weekly':
+        elif self.conf['repeat'] == 'Weekly':
             self.trigger = CronTrigger(day_of_week=self.fDate.weekday(), hour=hour, minute=minute)
-        elif self.conf['Repeat'] == 'Fortnightly':  # This one is totally fucking up
+        elif self.conf['repeat'] == 'Fortnightly':  # This one is totally fucking up
             self.trigger = DateTrigger(self.fDate)
-        elif self.conf['Repeat'] == 'Monthly':
+        elif self.conf['repeat'] == 'Monthly':
             self.trigger = CronTrigger(day=self.fDate.day, hour=hour, minute=minute)
         else:
             self.trigger = DateTrigger(self.fDate)
@@ -186,17 +186,17 @@ class WatchJob(object):
         """
         print "executing _schedule"
         self.job = scheduler.add_job(self._emit, self.trigger)
-        if 'End Date' in self.conf and self.conf['End Date'] != '' and create_cancel:
-            cancel_date = _correct_in_time(datetime.strptime(self.conf['End Date'], "%m/%d/%Y")) \
+        if 'end_date' in self.conf and self.conf['end_date'] != '' and create_cancel:
+            cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], "%m/%d/%Y")) \
                           + timedelta(hours=23, minutes=58)
 
             # cancel_date = datetime.now() + timedelta(minutes=3)  # ONLY FOR TESTING
 
-            print "Have an End Date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
+            print "Have an end_date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
 
             def finish():
                 self.cancel_job()
-                self.eventObj['Action'] = "Done"
+                self.eventObj['action'] = "Done"
                 event = {
                     "type": "update_action",
                     "data": self.eventObj
@@ -207,18 +207,18 @@ class WatchJob(object):
 
     def _emit(self):
         """ Emit the event to start sending messages """
-        print "emitting ", self.conf['ID']
-        if self.conf['Repeat'] in _done_action_types:
-            self.eventObj.update({"Action": "Done"})
+        print "emitting ", self.conf['id']
+        if self.conf['repeat'] in _done_action_types:
+            self.eventObj.update({"action": "Done"})
         else:
-            self.eventObj.update({"Action": _correct_out_time(datetime.now()).strftime(_format)})
+            self.eventObj.update({"action": _correct_out_time(datetime.now()).strftime(_format)})
 
         event = {
             "type": "send_sms",
             "data": self.eventObj
         }
 
-        if self.conf['Repeat'] == 'Fortnightly':
+        if self.conf['repeat'] == 'Fortnightly':
             print "Additional emit condition"
             self.trigger = DateTrigger(datetime.now() + timedelta(days=14))
             self._schedule(create_cancel=False)
@@ -226,7 +226,7 @@ class WatchJob(object):
         dispatcher.send(signal=SIG, event=event, sender=self)
 
     def cancel_job(self):
-        print "Remove called for campaign %s with id %i" % (self.conf['Campaign'], self.conf['ID'])
+        print "Remove called for campaign %s with id %i" % (self.conf['campaign'], self.conf['id'])
         if hasattr(self, 'job'):
             self.job.remove()
 
@@ -257,17 +257,17 @@ if __name__ == "__main__":
     register(logFunc)
     # dispatcher.connect(logFunc, signal=SIG, sender=dispatcher.Any)
     wj = WatchJob({
-        'Campaign': 'TestCampaign',
-        'Arabic': "Blah blah blah",
-        'English': "Hello, howr you",
-        'Repeat': 'Fortnightly',
-        'Hour': str(riyadhNow.hour),
-        'Minute': str((riyadhNow + timedelta(minutes=1)).minute),
-        'External Job': '5420ces5d013ddat510321cd',
-        'Start Date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
-        'End Date': '12/1/2015',
-        'ID': 1,
-        'Action': 'Registered'
+        'campaign': 'Testcampaign',
+        'arabic': "Blah blah blah",
+        'english': "Hello, howr you",
+        'repeat': 'Fortnightly',
+        'hour': str(riyadhNow.hour),
+        'minute': str((riyadhNow + timedelta(minutes=1)).minute),
+        'oid': '5420ces5d013ddat510321cd',
+        'start_date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
+        'end_date': '12/1/2015',
+        'id': 1,
+        'action': 'Registered'
     })
     print "First Run: ", wj.next_run().strftime("%a %d/%m/%Y %H:%M")
 
