@@ -121,11 +121,12 @@ def _data_map (conf):
         "minute": conf['Minute'],
         "english": conf['English'],
         "arabic": conf['Arabic'],
-        "oid": conf['External Job'],
         "action": conf['Action'],
         "id": conf['ID'],
-        "data_link": conf['Data Link']
+        "data_link": conf.get('Data Link', '')
     }
+    if conf.get('External Job', '') != '':
+        res['oid'] = conf['External Job']
     for key in ['hour', 'minute']:
         if res[key] == '' or res[key] == '_':
             res[key] = 0
@@ -145,7 +146,7 @@ _t1 = [
     {
         "Campaign": "Test1",
         "Start Date": "6/30/2015",
-        "Repeat": "Test",
+        "Repeat": "Once",
         "Hour": '1',
         "Minute": '20',
         "Arabic": "Blah blah",
@@ -158,7 +159,7 @@ _t1 = [
     {
         "Campaign": "Test2",
         "Start Date": "6/30/2015",
-        "Repeat": "Test",
+        "Repeat": "Hourly",
         "Hour": '1',
         "Minute": '20',
         "Arabic": "Blah blah",
@@ -185,9 +186,10 @@ _t2 = [
     }
 ]
 
-def _logPrint(i, id):
-    pass
-    # print "updating ", i, id
+def _logPrint(i, id, *args, **kwargs):
+    print "updating ", i, id
+    print "Got arguments: "+str(args)
+    print "Got kwargs: "+str(kwargs)
 
 def test1():
     register(watchjob.logFunc)
@@ -197,3 +199,9 @@ def test1():
 
 def test2():
     configure_jobs (_t2)
+
+if __name__ == '__main__':
+    from time import sleep
+    test1()
+    while True:
+        sleep(1)
