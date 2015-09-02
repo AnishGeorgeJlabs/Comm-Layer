@@ -92,7 +92,7 @@ def configure_jobs(csvlist):
                 _idSet.add(int(conf['ID']))
         for i, config in enumerate(csvlist):
             conf = _data_map(config)
-            if conf['action'].lower() in ['done', 'processing', 'missed', 'bad link', 'cancel']:
+            if conf['action'].lower() in ['done', 'processing', 'missed', 'bad link', 'cancel', 'data load failed']:
                 continue
             res = _addJob (conf)
             if res is not None:

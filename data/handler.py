@@ -27,6 +27,8 @@ def watcher(event, send_sms, log):
             data = event['data']
             result = work_external_data(data)
             print "DEBUG, external event, loaded = "+str(result)
+            if not result:
+                updateAction(data['id'], 'Data Load Failed', event.get('oid'))
         elif event['type'] == 'update_action':
             data = event['data']
             updateAction(data['id'], event['action'], event.get('oid'))
