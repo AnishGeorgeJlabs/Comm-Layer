@@ -46,9 +46,9 @@ def get_block_sheet():  ## NOTE: Only to be used by blockList.py
     return get_worksheet(5)
 
 
-actionAlpha = 'I'
-idAlpha = 'J'
-linkAlpha = 'K'
+actionAlpha = 'J'
+idAlpha = 'K'
+linkAlpha = 'L'
 
 
 def updateId(id, row, *arg, **kwargs):
@@ -110,5 +110,5 @@ def getFileLink(id):
     val = worksheet.get_all_records()
     for x in val:
         if int(id) == int(x['ID']):
-            return x['data_link']
+            return x['Data Link']
     return ''
