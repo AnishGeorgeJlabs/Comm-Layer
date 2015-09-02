@@ -63,7 +63,7 @@ def _addJob (conf):
         # Validity for job, only if the case is repeat = 'once' else always valid
         return helper()
 
-    elif conf['Action'].strip() == "" and conf['id'] in _currentJobs:   #_currentJobs.has_key(conf['id']):
+    elif conf['action'].strip() == "" and conf['id'] in _currentJobs:   #_currentJobs.has_key(conf['id']):
             print " c2. Cleared Action"
             # restart job
             _currentJobs[conf['id']].cancel_job()        # Cancel the job
