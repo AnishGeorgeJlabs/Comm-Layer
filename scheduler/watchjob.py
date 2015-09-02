@@ -27,7 +27,7 @@ _format = "%m/%d/%Y %H:%M:%S"
 riyadhZone = pytz.timezone('Asia/Riyadh')
 localZone = get_localzone()
 
-_repeated_types = ['Hourly', 'Daily', 'Fortnightly', 'Monthly']
+_repeated_types = ['Hourly', 'Daily', 'Weekly', 'Fortnightly', 'Monthly']
 _done_action_types = ['Once', 'Immediately']
 
 
@@ -43,6 +43,8 @@ def register(handler):
     print "Registering handler for WatchJob"
     dispatcher.connect(handler, signal=SIG, sender=dispatcher.Any)
 
+def _current_time():
+    return localZone.localize(datetime.now())
 
 class WatchJob(object):
     global _format
@@ -53,21 +55,18 @@ class WatchJob(object):
         self.conf = conf
         self._create_event_obj()
 
-        if self.conf['campaign'].lower() in "external":
-            event = {
-                'type': 'external_setup',
-                'data': self.conf
-            }
-            print "watch job got External"
-            dispatcher.send(signal=SIG, event=event, sender=self)
-            if self.conf['repeat'] == 'No Send':
-                return      # No further processing
+        if self.conf['campaign'].lower() in "external" and self.conf['repeat'] in ['No Send', 'Immediately']:
+            self._emit_data_download()
 
-        if self.conf['repeat'] == 'Immediately':
+        if self.conf['repeat'] == 'No Send':
+            return      # No further processing
+
+        elif self.conf['repeat'] == 'Immediately':
             if self.conf['campaign'].lower() in 'external':  # TODO, its an ugly hack, needs to be changed
-                scheduler.add_job(self._emit, 'date', run_date=(datetime.now() + timedelta(minutes=1)))
-            self._emit()
-            return
+                self.job = scheduler.add_job(self._emit, 'date', run_date=(datetime.now() + timedelta(minutes=1)))
+            else:
+                self._emit()
+            return      # No further processing
 
         try:
             self.fDate = _correct_in_time(
@@ -77,12 +76,13 @@ class WatchJob(object):
                 )
             )
         except:
-            self.fDate = localZone.localize(datetime.now())
+            self.fDate = _current_time()
 
         # Short circuit if we missed our time
-        if self.conf['repeat'] == 'Once' and self.fDate <= localZone.localize(datetime.now()):
+        if self.conf['repeat'] == 'Once' and self.fDate <= _current_time():
             self.valid = False
             print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
+            print "Missed by: "+str(_current_time() - self.fDate)
         else:
             self.valid = True
 
@@ -196,6 +196,9 @@ class WatchJob(object):
 
             def finish():
                 self.cancel_job()
+                if hasattr(self, 'data_download_job'):
+                    self.data_download_job.remove()
+
                 self.eventObj['action'] = "Done"
                 event = {
                     "type": "update_action",
@@ -203,7 +206,8 @@ class WatchJob(object):
                 }
                 dispatcher.send(signal=SIG, event=event, sender=self)
 
-            scheduler.add_job(finish, DateTrigger(cancel_date))
+            self.canceller_job = scheduler.add_job(finish, DateTrigger(cancel_date))
+        self._schedule_data_download()
 
     def _emit(self):
         """ Emit the event to start sending messages """
@@ -223,7 +227,36 @@ class WatchJob(object):
             self.trigger = DateTrigger(datetime.now() + timedelta(days=14))
             self._schedule(create_cancel=False)
 
+        if self.conf['repeat'] not in ['Once', 'Immediately']:
+            self._schedule_data_download()
         dispatcher.send(signal=SIG, event=event, sender=self)
+
+    def _emit_data_download(self):
+        event = {
+            'type': 'external_setup',
+            'data': self.conf
+        }
+        print "Data download job"
+        dispatcher.send(signal=SIG, event=event, sender=self)
+
+    def _schedule_data_download(self):
+        if self.conf['campaign'] != 'external' or not hasattr(self,'job'):
+            print "Returning from _schedule_data_download"
+            return
+        if self.conf['repeat'] == 'Hourly':
+            grace_period = timedelta(minutes=30)
+        elif self.conf['repeat'] == 'Daily':
+            grace_period = timedelta(hours=12)
+        elif self.conf['repeat'] in ['Once', 'Weekly', 'Fortnightly', 'Monthly']:
+            grace_period = timedelta(days=1)
+
+        print "Scheduling data download, grace period: "+str(grace_period)
+        nx = self.next_run()
+        if nx - _current_time() <= grace_period:
+            self._emit_data_download()
+        else:
+            self.data_download_job = scheduler.add_job(self._emit_data_download, DateTrigger(nx - grace_period))
+
 
     def cancel_job(self):
         print "Remove called for campaign %s with id %i" % (self.conf['campaign'], self.conf['id'])
@@ -236,13 +269,18 @@ class WatchJob(object):
         else:
             return None
 
+    def next_download_run(self):
+        if hasattr(self, 'data_download_job'):
+            return self.data_download_job.next_run_time
+        else:
+            return None
+
 # -------------------- Testing ------------------------------- #
 
 import pprint
 
 pp = pprint.PrettyPrinter(indent=2)
 now = datetime.now()
-riyadhNow = _correct_out_time(datetime.now())
 
 
 def logFunc(sender, event):
@@ -250,25 +288,31 @@ def logFunc(sender, event):
     print "Got Event at: " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     pp.pprint(event)
     print ">> Next Run: ", sender.next_run().strftime("%a %d/%m/%Y %H:%M")
+    ds = sender.next_download_run()
+    if ds:
+        print ">> Next downlaod: ", ds.strftime("%a %d/%m/%Y %H:%M")
 
 
 if __name__ == "__main__":
     print "Now: " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     register(logFunc)
     # dispatcher.connect(logFunc, signal=SIG, sender=dispatcher.Any)
-    wj = WatchJob({
-        'campaign': 'Testcampaign',
+    riyadhNow = _correct_out_time(datetime.now())
+    conf = {
+        'campaign': 'external',
         'arabic': "Blah blah blah",
         'english': "Hello, howr you",
-        'repeat': 'Fortnightly',
-        'hour': str(riyadhNow.hour),
-        'minute': str((riyadhNow + timedelta(minutes=1)).minute),
+        'repeat': 'Hourly',
+        'hour': 1,
+        # 'hour': (riyadhNow + timedelta(minutes=2)).hour,
+        'minute': (riyadhNow + timedelta(minutes=1)).minute,
         'oid': '5420ces5d013ddat510321cd',
         'start_date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
         'end_date': '12/1/2015',
         'id': 1,
         'action': 'Registered'
-    })
+    }
+    wj = WatchJob(conf)
     print "First Run: ", wj.next_run().strftime("%a %d/%m/%Y %H:%M")
 
     while True:
