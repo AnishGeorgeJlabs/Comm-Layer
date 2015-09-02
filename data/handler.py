@@ -18,7 +18,7 @@ def watcher(event, send_sms, log):
             if not res:
               raise Exception
 
-            log(str(data['id']), len(payloadArr) - 1)              # The last one is the sentinel
+            log(data['id'], len(payloadArr) - 1)              # The last one is the sentinel
             print "Payload array size", len(payloadArr) - 1
 
             for payload in payloadArr:

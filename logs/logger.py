@@ -62,8 +62,7 @@ def callback(ch, method, properties, body):
         elif sender == "critical":
             critical_log(log)
     except Exception, e:
-        raise
-        print "ERROR: LOGGER: ", e
+        print "ERROR: LOGGER: ", str(e)
 
 if __name__ == "__main__":
     print "Starting logger"
