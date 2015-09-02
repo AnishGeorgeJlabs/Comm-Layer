@@ -96,7 +96,7 @@ def updateAux(id, col, data):
     val = worksheet.get_all_records()
     for x in val:
         try:
-            if int(id) == int(x['id']):
+            if int(id) == int(x['ID']):         # Here this is the sheet based ID
                 rowNum = val.index(x) + 2
                 cell = col + str(rowNum)
                 print cell
@@ -109,6 +109,6 @@ def getFileLink(id):
     worksheet = get_scheduler_sheet()
     val = worksheet.get_all_records()
     for x in val:
-        if int(id) == int(x['id']):
+        if int(id) == int(x['ID']):
             return x['data_link']
     return ''
