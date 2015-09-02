@@ -90,7 +90,12 @@ def execute_pipeline(pipeline, options):
             )
 
         block_set = aux.get_block_set()
-        res = [v for k, v in data.items() if ','.join(v[0:2]) not in block_set]
+        records = map(
+            lambda k: [str(k[0]).strip('+ ').replace('-', '')] + k[1:],
+            data.values()
+        )
+
+        res = [v for v in records if ','.join(v[0:2]) not in block_set]
         return res, headers
     except Exception:
         cLogger.exception("execute pipeline crashed with pipeline %s and options %s", str(pipeline), str(options))
