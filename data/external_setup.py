@@ -28,7 +28,7 @@ def save_to_file(lst_obj, filename, headers):
 
 def work_external_data(event):
     try:
-        oid = event['External Job']
+        oid = event['oid']
         # url = event['External Link']
         url = 'http://45.55.72.208/wadi/query?id='+str(event['External Job'])
         r = requests.get(url)
@@ -36,7 +36,7 @@ def work_external_data(event):
         if r.status_code == 200:
             rdata = r.json()
 
-            filename = "res_"+str(event['ID'])+".csv"
+            filename = "res_"+str(event['id'])+".csv"
             filename_full = './data/temp/'+filename
 
             if 'query' in rdata:
@@ -54,16 +54,16 @@ def work_external_data(event):
 
             print "Updating action"
             upload_file(filename, filename_full)
-            if event.get('Repeat', 'Once') == 'No Send':
+            if event.get('repeat', 'Once') == 'No Send':
                 action = 'Done'
             else:
                 action = 'Data Loaded'
-            updateAction(event['ID'], action, oid=oid)
+            updateAction(event['id'], action, oid=oid)
             print "Updating link"
-            updateLink(event['ID'], 'http://jlabs.co/downloadcsv.php?file='+filename, oid=oid)
+            updateLink(event['id'], 'http://jlabs.co/downloadcsv.php?file='+filename, oid=oid)
             return True
         else:
-            updateAction(event['ID'], 'Bad Link', oid=oid)
+            updateAction(event['id'], 'Bad Link', oid=oid)
             return False
     except Exception:
         cLogger.exception("crashed with event %s", str(event))

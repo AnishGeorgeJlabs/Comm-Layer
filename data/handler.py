@@ -18,7 +18,7 @@ def watcher(event, send_sms, log):
             if not res:
               raise Exception
 
-            log(str(data['ID']), len(payloadArr) - 1)              # The last one is the sentinel
+            log(str(data['id']), len(payloadArr) - 1)              # The last one is the sentinel
             print "Payload array size", len(payloadArr) - 1
 
             for payload in payloadArr:
@@ -26,10 +26,10 @@ def watcher(event, send_sms, log):
         elif event['type'] == 'external_setup':
             data = event['data']
             result = work_external_data(data)
-            print "DEBUG, external event, laoded = "+str(result)
+            print "DEBUG, external event, loaded = "+str(result)
         elif event['type'] == 'update_action':
             data = event['data']
-            updateAction(data['ID'], event['Action'], event.get('External Job'))
+            updateAction(data['id'], event['action'], event.get('oid'))
 
         return True
     except Exception:

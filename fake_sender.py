@@ -23,8 +23,8 @@ def callback(ch, method, prop, body):
     print "Got sms: "+str(payload)
     if 'sentinel' in payload:
         d = payload['sentinel']
-        updateAction(d['ID'], d['Action'], d.get('External Job'))
-        print "Finished with job: ", d['ID']
+        updateAction(d['id'], d['action'], d.get('oid'))
+        print "Finished with job: ", d['id']
     else:
         log(data[0])("success")
     ch.basic_ack(delivery_tag=method.delivery_tag)

@@ -107,9 +107,9 @@ def load_data(event):
     """ Main Method for loading the data """
     try:
         print "Inside Data loader"
-        campaign = event['Campaign']
-        ar = event['Arabic']
-        en = event['English']
+        campaign = event['campaign']
+        ar = event['arabic']
+        en = event['english']
 
         sms_dict_n = {'ar': str_to_hex(ar), 'en': clean_english(en)}  # Normal cases
         sms_dict_ae = {'ar': str_to_hex(ar + '\nOPTOUT@4782'),
@@ -119,7 +119,7 @@ def load_data(event):
             sms_dict = sms_dict_ae
 
         payloadArr = []
-        data = getUserData(campaign, event['ID'])
+        data = getUserData(campaign, event['id'])
         for d in data:
             if 'external' in campaign.lower() and len(d) > 2 and 'UAE' in d[2]:
                 sms_dict = sms_dict_ae
@@ -135,15 +135,15 @@ def load_data(event):
                 message_text = sms_dict['en']
                 payload = {'message': message_text,
                            'mobilenumber': d[0].strip("=").strip().replace('+', '').replace('-', ''), 'mtype': "N"}
-            payloadArr.append([event['ID'], payload])
+            payloadArr.append([event['id'], payload])
 
         # Now the sms_sender is responsible for doing the final
         # update Action saying things are done
         payloadArr.append(['sentinel', {
             'sentinel': {
-                'ID': event['ID'],
-                'Action': event['Action'],
-                'External Job': event.get('External Job')
+                'id': event['id'],
+                'action': event['action'],
+                'oid': event.get('oid')
             }
         }])
         return True, payloadArr
@@ -151,4 +151,4 @@ def load_data(event):
         cLogger.exception("with event as %s, data_loader crashed", str(event))
         return False, None
     finally:
-        updateAction(event['ID'], 'Processing', oid=event.get('External Job'))
+        updateAction(event['id'], 'Processing', oid=event.get('oid'))

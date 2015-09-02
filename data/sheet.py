@@ -53,8 +53,8 @@ linkAlpha = 'K'
 
 def updateId(id, row, *arg, **kwargs):
     """
-    Updates the ID
-    :param id: The created ID
+    Updates the id
+    :param id: The created id
     :param row: sheet row index - 2
     :param arg: May contain the starting action
     :param kwargs: May contain 'oid' in which case the api will be notified
@@ -81,7 +81,7 @@ def updateLink(id, link, oid=None):
 
 def updateAction(id, action, oid=None):
     """ Update the Action i.e. Status of the job
-    :param id: The tool's ID for the current job
+    :param id: The tool's id for the current job
     :param action: The current status
     :param oid: Present only for external jobs. If present, then we also put out a shout to the api,
                 regarding the status
@@ -96,7 +96,7 @@ def updateAux(id, col, data):
     val = worksheet.get_all_records()
     for x in val:
         try:
-            if int(id) == int(x['ID']):
+            if int(id) == int(x['id']):
                 rowNum = val.index(x) + 2
                 cell = col + str(rowNum)
                 print cell
@@ -109,6 +109,6 @@ def getFileLink(id):
     worksheet = get_scheduler_sheet()
     val = worksheet.get_all_records()
     for x in val:
-        if int(id) == int(x['ID']):
-            return x['Data Link']
+        if int(id) == int(x['id']):
+            return x['data_link']
     return ''
