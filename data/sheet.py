@@ -101,8 +101,8 @@ def updateAux(id, col, data):
                 cell = col + str(rowNum)
                 print cell
                 worksheet.update_acell(cell, str(data))
-        except:
-            print "Some error came"
+        except Exception, e:
+            print "Some error came : "+str(e)
 
 
 def getFileLink(id):
