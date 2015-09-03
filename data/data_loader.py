@@ -121,6 +121,8 @@ def load_data(event):
 
         if 'uae' in campaign.lower():
             sms_dict = sms_dict_ae
+        else:
+            sms_dict = sms_dict_n
 
         payloadArr = []
         data = getUserData(campaign, event['id'])
