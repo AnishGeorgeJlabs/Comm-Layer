@@ -85,6 +85,9 @@ class WatchJob(object):
             self.valid = False
             print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
             print "Missed by: "+str(_current_time() - self.fDate)
+        elif self.conf['repeat'] == 'Immediately':
+            self.valid = True
+            self._emit()
         else:
             self.valid = True
 
