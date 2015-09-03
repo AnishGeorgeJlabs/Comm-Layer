@@ -127,6 +127,9 @@ def _data_map (conf):
     }
     if conf.get('External Job', '') != '':
         res['oid'] = conf['External Job']
+    if conf.get('End Date', '').strip() not in ['', '_']:
+        res['end_date'] = conf['End Date']
+
     for key in ['hour', 'minute']:
         if res[key] == '' or res[key] == '_':
             res[key] = 0

@@ -2,6 +2,7 @@ from data.sheet import get_scheduler_sheet
 from data.configuration import config
 import pika
 import json
+import pprint
 
 worksheet = get_scheduler_sheet().get_all_records()
 #print "Got worksheet", str(worksheet)
@@ -22,6 +23,8 @@ check = all(
 # ---------- Rabbit ----------- #
 if check:
     print "publishing records: ", len(worksheet)
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(worksheet)
     connection = pika.BlockingConnection(
         pika.ConnectionParameters('localhost'))
     channel = connection.channel()
