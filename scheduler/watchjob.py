@@ -56,9 +56,11 @@ class WatchJob(object):
         self._create_event_obj()
 
         if self.conf['campaign'].lower() in "external" and self.conf['repeat'] in ['No Send', 'Immediately']:
+            self.valid = True
             self._emit_data_download()
 
         if self.conf['repeat'] == 'No Send':
+            self.valid = True
             return      # No further processing
 
         elif self.conf['repeat'] == 'Immediately':
