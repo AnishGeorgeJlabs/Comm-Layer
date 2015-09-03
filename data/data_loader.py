@@ -124,6 +124,7 @@ def load_data(event):
 
         payloadArr = []
         data = getUserData(campaign, event['id'])
+        print "Got data: ", data
         for d in data:
             if 'external' in campaign.lower() and len(d) > 2 and 'UAE' in d[2]:
                 sms_dict = sms_dict_ae
