@@ -43,8 +43,10 @@ def register(handler):
     print "Registering handler for WatchJob"
     dispatcher.connect(handler, signal=SIG, sender=dispatcher.Any)
 
+
 def _current_time():
     return localZone.localize(datetime.now())
+
 
 class WatchJob(object):
     global _format
@@ -194,19 +196,18 @@ class WatchJob(object):
 
     def _set_delay_and_schedule_emit(self):  # Todo: setup for all repeat types
         """ Either schedule the emission right now or delay that """
+        self.valid = True
         if (self.conf['repeat'] in _repeated_types) and \
                         self.fDate.date() > _current_time().date():
             print "case 1 of set delay"
-            self.valid = True
             scheduler.add_job(self._schedule, 'date', run_date=self.sDate)
         elif self.conf['repeat'] == 'Once' and self.fDate <= _current_time():
             self.valid = False
             print "case 2 of set delay"
             print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
-            print "Missed by: "+str(_current_time() - self.fDate)
+            print "Missed by: " + str(_current_time() - self.fDate)
         elif self.conf['repeat'] == 'No Send':
             print "case 3 of set delay"
-            self.valid = True
         else:
             print "case 4 of set delay"
             self._schedule()
@@ -247,6 +248,7 @@ class WatchJob(object):
         print "executing _schedule"
 
         if self.conf['repeat'] == 'Immediately':
+            print "Scheduling the Immediate"
             if self.conf['campaign'] == 'external':
                 self.job = scheduler.add_job(self._emit, 'date', run_date=(datetime.now() + timedelta(minutes=1)))
             else:
@@ -275,7 +277,6 @@ class WatchJob(object):
 
                 self.canceller_job = scheduler.add_job(finish, DateTrigger(cancel_date))
 
-
     def _emit(self):
         """ Emit the event to start sending messages """
         print "emitting ", self.conf['id']
@@ -302,7 +303,6 @@ class WatchJob(object):
 
         dispatcher.send(signal=SIG, event=event, sender=self)
 
-
     def _emit_data_download(self):
         event = {
             'type': 'external_setup',
@@ -324,13 +324,13 @@ class WatchJob(object):
             elif self.conf['repeat'] in ['Once', 'Weekly', 'Fortnightly', 'Monthly']:
                 grace_period = timedelta(days=1)
 
-            print "Scheduling data download, grace period: "+str(grace_period)
+            print "Scheduling data download, grace period: " + str(grace_period)
             nx = self.next_run()
             if not nx:
                 print "MASSIVE LOOPI, returning from schedule data download"
                 return
 
-            if nx - _current_time() <= grace_period:        # In the rare crash case, nx can be negative
+            if nx - _current_time() <= grace_period:  # In the rare crash case, nx can be negative
                 self._emit_data_download()
             else:
                 self.data_download_job = scheduler.add_job(self._emit_data_download, DateTrigger(nx - grace_period))
@@ -381,9 +381,9 @@ if __name__ == "__main__":
         'campaign': 'external',
         'arabic': "Blah blah blah",
         'english': "Hello, howr you",
-        'repeat': 'Hourly',
-        'hour': 1,
-        # 'hour': (riyadhNow + timedelta(minutes=2)).hour,
+        'repeat': 'Monthly',
+        # 'hour': 1,
+        'hour': (riyadhNow).hour,
         'minute': (riyadhNow + timedelta(minutes=1)).minute,
         'oid': '5420ces5d013ddat510321cd',
         'start_date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
