@@ -102,7 +102,9 @@ def updateAction(id, action, oid=None):
 def updateAux(id, col, data):
     worksheet = get_scheduler_sheet()
     if id in _cache and worksheet.acell(idAlpha+str(_cache[id])).value == str(id):
-        worksheet.update_acell(col + str(_cache[id]), str(data))
+        cell_name = col + str(_cache[id])
+        if worksheet.acell(cell_name).value != 'Cancel':
+            worksheet.update_acell(cell_name)
     else:
         val = worksheet.get_all_records()
         for x in val:
@@ -114,7 +116,8 @@ def updateAux(id, col, data):
 
                     cell = col + str(rowNum)
                     print cell
-                    worksheet.update_acell(cell, str(data))
+                    if x['Action'] != 'Cancel':
+                        worksheet.update_acell(cell, str(data))
                     break
             except Exception, e:
                 print "Some error came : "+str(e)

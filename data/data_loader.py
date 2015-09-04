@@ -82,6 +82,7 @@ def get_external_data(event):
     else:
         return []
 
+
 def getUserData(event):
     """ Get the [phone, language] or [phone, language, country] for the customers """
     data = []
