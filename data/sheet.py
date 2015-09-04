@@ -7,6 +7,8 @@ import gspread
 import requests
 from job_update_api import update_job_status
 
+_cache = {}             # id against sheet row numbers
+
 def get_worksheet(i):
     storage = Storage("creds.dat")
     credentials = storage.get()
@@ -60,17 +62,23 @@ def updateId(id, row, *arg, **kwargs):
     :param kwargs: May contain 'oid' in which case the api will be notified
     :return:
     """
+
+    sheet_row = row + 2
     print 'inside updateId, ', id, row
-    cell = idAlpha + str(row + 2)
+    cell = idAlpha + str(sheet_row)
+
+    _cache[id] = sheet_row
+
     worksheet = get_scheduler_sheet()
     worksheet.update_acell(cell, id)
+
     if len(arg) > 0:
-        worksheet.update_acell(actionAlpha + str(row + 2), arg[0])
+        worksheet.update_acell(actionAlpha + str(sheet_row), arg[0])
     if 'oid' in kwargs and kwargs['oid'] is not None:
         if len(arg) > 0:
-            update_job_status(kwargs['oid'], t_id=id, status=str(arg[0]))
+            update_job_status(kwargs['oid'], t_id=id, sheet_row=sheet_row, status=str(arg[0]))
         else:
-            update_job_status(kwargs['oid'], t_id=id)
+            update_job_status(kwargs['oid'], t_id=id, sheet_row=sheet_row)
 
 
 def updateLink(id, link, oid=None):
@@ -93,16 +101,23 @@ def updateAction(id, action, oid=None):
 
 def updateAux(id, col, data):
     worksheet = get_scheduler_sheet()
-    val = worksheet.get_all_records()
-    for x in val:
-        try:
-            if int(id) == int(x['ID']):         # Here this is the sheet based ID
-                rowNum = val.index(x) + 2
-                cell = col + str(rowNum)
-                print cell
-                worksheet.update_acell(cell, str(data))
-        except Exception, e:
-            print "Some error came : "+str(e)
+    if id in _cache and worksheet.acell(idAlpha+str(_cache[id])).value == str(id):
+        worksheet.update_acell(col + str(_cache[id]), str(data))
+    else:
+        val = worksheet.get_all_records()
+        for x in val:
+            try:
+                if str(id) == str(x['ID']):         # Here this is the sheet based ID
+                    rowNum = val.index(x) + 2
+
+                    _cache[id] = rowNum
+
+                    cell = col + str(rowNum)
+                    print cell
+                    worksheet.update_acell(cell, str(data))
+                    break
+            except Exception, e:
+                print "Some error came : "+str(e)
 
 
 def getFileLink(id):
