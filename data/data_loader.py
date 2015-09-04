@@ -51,8 +51,15 @@ def clean_english(text):
 
 # ------------------------------------------------
 # -----------------Get Campaign Data---------------
-def get_external_data(id):
+def get_external_data(event):
     """ Get the dataset from external csv file which was initially uploaded by the tool itself :param id: """
+    if event['campaign'] == 'external':
+        id = event['id']
+    else:
+        id = event.get('segment_data', {}).get('ref_id', 0)
+        if id == 0:
+            return []
+
     url = "http://jlabs.co/wadi/query_results/res_" + str(id) + ".csv"
     print "Got url: " + url
     if url == '':
@@ -65,17 +72,25 @@ def get_external_data(id):
                   x[:3] for x in
                   list(reader)
                   ]
-        return data
+
+        if event['campaign'] == 'segment':
+            lower_limit = event.get('segment_data', {}).get('lower_limit', 0)
+            upper_limit = event.get('segment_data', {}).get('upper_limit', len(data))
+            return data[lower_limit: upper_limit]
+        else:
+            return data
     else:
         return []
 
-def getUserData(campaign, id):
+def getUserData(event):
     """ Get the [phone, language] or [phone, language, country] for the customers """
     data = []
+    campaign = event['campaign']
+    id = event['id']
     clo = campaign.lower()
     print "inside getUserData, " + clo + ", and id: " + str(id)
-    if clo in "external":  # Main priority
-        data = get_external_data(id)
+    if clo in ["external", "segment"]:  # Main priority
+        data = get_external_data(event)
         print "Got external data: " + str(data)
     elif clo.startswith("all"):  # Actually, all in campaig.lower()
         print "Starts with all"
@@ -125,7 +140,7 @@ def load_data(event):
             sms_dict = sms_dict_n
 
         payloadArr = []
-        data = getUserData(campaign, event['id'])
+        data = getUserData(event)
         print "Got data: ", data
         for d in data:
             if 'external' in campaign.lower() and len(d) > 2 and 'UAE' in d[2]:
