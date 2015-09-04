@@ -110,9 +110,10 @@ class WatchJob(object):
         if self.conf['repeat'] != 'No Send':
             self._create_event_obj()
 
+        # Step 3: Timing data
         self._set_timing()
 
-        # Step 3: Create Trigger if needed
+        # Step 4: Create Trigger if needed
         self._set_trigger()
 
         # Step 5: Schedule emission
@@ -121,12 +122,6 @@ class WatchJob(object):
             self._schedule_data_download()
         else:
             self.valid = True
-
-        # Step 6: Data download
-        '''
-        if self.conf['campaign'] == 'external':
-            self._schedule_data_download()
-        '''
 
     def _create_event_obj(self):
         self.eventObj = {
