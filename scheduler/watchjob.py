@@ -108,16 +108,23 @@ class WatchJob(object):
         if self.conf['repeat'] != 'No Send':
             self._create_event_obj()
 
+        self._set_timing()
+
         # Step 3: Create Trigger if needed
         self._set_trigger()
 
         # Step 5: Schedule emission
         if not self._crash_recovery():
             self._set_delay_and_schedule_emit()
+            self._schedule_data_download()
+        else:
+            self.valid = True
 
         # Step 6: Data download
-        if self.conf['campaign'] == 'external'
+        '''
+        if self.conf['campaign'] == 'external':
             self._schedule_data_download()
+        '''
 
     def _create_event_obj(self):
         self.eventObj = {
@@ -167,14 +174,12 @@ class WatchJob(object):
                         return True
                 return False
             except:
+                print "Cant parse Action"
                 return False
         else:
             return False
 
-    def _set_delay_and_schedule_emit(self):  # Todo: setup for all repeat types
-        """ Either schedule the emission right now or delay that """
-
-        # Data Setup
+    def _set_timing(self):
         try:
             self.fDate = _correct_in_time(
                 datetime.combine(
@@ -186,19 +191,24 @@ class WatchJob(object):
             self.fDate = _current_time()
 
         self.sDate = self.fDate.replace(hour=0, minute=0, second=0)
-        # ----------
 
+    def _set_delay_and_schedule_emit(self):  # Todo: setup for all repeat types
+        """ Either schedule the emission right now or delay that """
         if (self.conf['repeat'] in _repeated_types) and \
                         self.fDate.date() > _current_time().date():
+            print "case 1 of set delay"
             self.valid = True
             scheduler.add_job(self._schedule, 'date', run_date=self.sDate)
         elif self.conf['repeat'] == 'Once' and self.fDate <= _current_time():
             self.valid = False
+            print "case 2 of set delay"
             print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
             print "Missed by: "+str(_current_time() - self.fDate)
         elif self.conf['repeat'] == 'No Send':
+            print "case 3 of set delay"
             self.valid = True
         else:
+            print "case 4 of set delay"
             self._schedule()
 
     def _set_trigger(self):
@@ -265,8 +275,6 @@ class WatchJob(object):
 
                 self.canceller_job = scheduler.add_job(finish, DateTrigger(cancel_date))
 
-            # Scheduling for the next run
-            self._schedule_data_download()
 
     def _emit(self):
         """ Emit the event to start sending messages """
@@ -288,7 +296,12 @@ class WatchJob(object):
 
         if self.conf['repeat'] not in ['Once', 'Immediately']:
             self._schedule_data_download()
+
+        # Scheduling for the next run
+        self._schedule_data_download()
+
         dispatcher.send(signal=SIG, event=event, sender=self)
+
 
     def _emit_data_download(self):
         event = {
@@ -299,6 +312,8 @@ class WatchJob(object):
         dispatcher.send(signal=SIG, event=event, sender=self)
 
     def _schedule_data_download(self):
+        if self.conf['campaign'] != 'external':
+            return
         if self.conf['repeat'] in ['No Send', 'Immediately']:
             self._emit_data_download()
         else:
@@ -315,11 +330,10 @@ class WatchJob(object):
                 print "MASSIVE LOOPI, returning from schedule data download"
                 return
 
-            if nx - _current_time() <= grace_period:
+            if nx - _current_time() <= grace_period:        # In the rare crash case, nx can be negative
                 self._emit_data_download()
             else:
                 self.data_download_job = scheduler.add_job(self._emit_data_download, DateTrigger(nx - grace_period))
-
 
     def cancel_job(self):
         print "Remove called for campaign %s with id %i" % (self.conf['campaign'], self.conf['id'])
