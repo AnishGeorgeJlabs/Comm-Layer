@@ -116,7 +116,8 @@ class WatchJob(object):
             self._set_delay_and_schedule_emit()
 
         # Step 6: Data download
-        self._schedule_data_download()
+        if self.conf['campaign'] == 'external'
+            self._schedule_data_download()
 
     def _create_event_obj(self):
         self.eventObj = {
