@@ -51,6 +51,7 @@ class WatchJob(object):
     global _repeated_types
     global _done_action_types
 
+    '''
     def __init__(self, conf):
         self.conf = conf
         self._create_event_obj()
@@ -96,7 +97,26 @@ class WatchJob(object):
 
             self._set_trigger()
             if not self._crash_recovery():
-                self._set_delay()
+                self._set_delay_and_schedule_emit()
+    '''
+
+    def __init__(self, conf):
+        # Step 1: Configuration set
+        self.conf = conf
+
+        # Step 2: Create Event object
+        if self.conf['repeat'] != 'No Send':
+            self._create_event_obj()
+
+        # Step 3: Create Trigger if needed
+        self._set_trigger()
+
+        # Step 5: Schedule emission
+        if not self._crash_recovery():
+            self._set_delay_and_schedule_emit()
+
+        # Step 6: Data download
+        self._schedule_data_download()
 
     def _create_event_obj(self):
         self.eventObj = {
@@ -132,6 +152,7 @@ class WatchJob(object):
                         # Add a delay of a day
                         print "Scheduling for next day"
                         scheduler.add_job(self._schedule, 'date', run_date=tommorow)
+                        return True
                 elif self.conf['repeat'] == 'Hourly':
                     chour = self.conf['hour']
                     diff = now.hour - lastUsed.hour
@@ -142,17 +163,40 @@ class WatchJob(object):
                         thour = (now + timedelta(hours=(chour - diff))).replace(minute=0, second=0)
                         print "Scheduling for next hour ", thour
                         scheduler.add_job(self._schedule, 'date', run_date=thour)
-                return True
+                        return True
+                return False
             except:
                 return False
         else:
             return False
 
-    def _set_delay(self):  # Todo: setup for all repeat types
+    def _set_delay_and_schedule_emit(self):  # Todo: setup for all repeat types
         """ Either schedule the emission right now or delay that """
+
+        # Data Setup
+        try:
+            self.fDate = _correct_in_time(
+                datetime.combine(
+                    datetime.strptime(self.conf['start_date'], '%m/%d/%Y'),
+                    time(self.conf['hour'], self.conf['minute'])
+                )
+            )
+        except:
+            self.fDate = _current_time()
+
+        self.sDate = self.fDate.replace(hour=0, minute=0, second=0)
+        # ----------
+
         if (self.conf['repeat'] in _repeated_types) and \
-                        self.fDate.date() > datetime.now().date():
+                        self.fDate.date() > _current_time().date():
+            self.valid = True
             scheduler.add_job(self._schedule, 'date', run_date=self.sDate)
+        elif self.conf['repeat'] == 'Once' and self.fDate <= _current_time():
+            self.valid = False
+            print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
+            print "Missed by: "+str(_current_time() - self.fDate)
+        elif self.conf['repeat'] == 'No Send':
+            self.valid = True
         else:
             self._schedule()
 
@@ -190,29 +234,38 @@ class WatchJob(object):
         Todo: somehow add the action update (DONE) after being ended
         """
         print "executing _schedule"
-        self.job = scheduler.add_job(self._emit, self.trigger)
-        if 'end_date' in self.conf and self.conf['end_date'] != '' and create_cancel:
-            cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], "%m/%d/%Y")) \
-                          + timedelta(hours=23, minutes=58)
 
-            # cancel_date = datetime.now() + timedelta(minutes=3)  # ONLY FOR TESTING
+        if self.conf['repeat'] == 'Immediately':
+            if self.conf['campaign'] == 'external':
+                self.job = scheduler.add_job(self._emit, 'date', run_date=(datetime.now() + timedelta(minutes=1)))
+            else:
+                self._emit()
+        else:
+            self.job = scheduler.add_job(self._emit, self.trigger)
+            if 'end_date' in self.conf and self.conf['end_date'] != '' and create_cancel:
+                cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], "%m/%d/%Y")) \
+                              + timedelta(hours=23, minutes=58)
 
-            print "Have an end_date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
+                # cancel_date = datetime.now() + timedelta(minutes=3)  # ONLY FOR TESTING
 
-            def finish():
-                self.cancel_job()
-                if hasattr(self, 'data_download_job'):
-                    self.data_download_job.remove()
+                print "Have an end_date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
 
-                self.eventObj['action'] = "Done"
-                event = {
-                    "type": "update_action",
-                    "data": self.eventObj
-                }
-                dispatcher.send(signal=SIG, event=event, sender=self)
+                def finish():
+                    self.cancel_job()
+                    if hasattr(self, 'data_download_job'):
+                        self.data_download_job.remove()
 
-            self.canceller_job = scheduler.add_job(finish, DateTrigger(cancel_date))
-        self._schedule_data_download()
+                    self.eventObj['action'] = "Done"
+                    event = {
+                        "type": "update_action",
+                        "data": self.eventObj
+                    }
+                    dispatcher.send(signal=SIG, event=event, sender=self)
+
+                self.canceller_job = scheduler.add_job(finish, DateTrigger(cancel_date))
+
+            # Scheduling for the next run
+            self._schedule_data_download()
 
     def _emit(self):
         """ Emit the event to start sending messages """
@@ -245,22 +298,26 @@ class WatchJob(object):
         dispatcher.send(signal=SIG, event=event, sender=self)
 
     def _schedule_data_download(self):
-        if self.conf['campaign'] != 'external' or not hasattr(self,'job'):
-            print "Returning from _schedule_data_download"
-            return
-        if self.conf['repeat'] == 'Hourly':
-            grace_period = timedelta(minutes=30)
-        elif self.conf['repeat'] == 'Daily':
-            grace_period = timedelta(hours=12)
-        elif self.conf['repeat'] in ['Once', 'Weekly', 'Fortnightly', 'Monthly']:
-            grace_period = timedelta(days=1)
-
-        print "Scheduling data download, grace period: "+str(grace_period)
-        nx = self.next_run()
-        if nx - _current_time() <= grace_period:
+        if self.conf['repeat'] in ['No Send', 'Immediately']:
             self._emit_data_download()
         else:
-            self.data_download_job = scheduler.add_job(self._emit_data_download, DateTrigger(nx - grace_period))
+            if self.conf['repeat'] == 'Hourly':
+                grace_period = timedelta(minutes=30)
+            elif self.conf['repeat'] == 'Daily':
+                grace_period = timedelta(hours=12)
+            elif self.conf['repeat'] in ['Once', 'Weekly', 'Fortnightly', 'Monthly']:
+                grace_period = timedelta(days=1)
+
+            print "Scheduling data download, grace period: "+str(grace_period)
+            nx = self.next_run()
+            if not nx:
+                print "MASSIVE LOOPI, returning from schedule data download"
+                return
+
+            if nx - _current_time() <= grace_period:
+                self._emit_data_download()
+            else:
+                self.data_download_job = scheduler.add_job(self._emit_data_download, DateTrigger(nx - grace_period))
 
 
     def cancel_job(self):
@@ -271,6 +328,8 @@ class WatchJob(object):
     def next_run(self):
         if hasattr(self, 'job'):
             return self.job.next_run_time
+        elif hasattr(self, 'fDate'):
+            return self.fDate
         else:
             return None
 
