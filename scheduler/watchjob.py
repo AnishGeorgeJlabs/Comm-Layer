@@ -133,6 +133,8 @@ class WatchJob(object):
         oid = self.conf.get('oid', '')
         if oid != '':
             self.eventObj['oid'] = oid
+        if self.eventObj['campaign'] == 'segment' and 'segment_data' in self.conf:
+            self.eventObj['segment_data'] = self.conf['segment_data']
 
     def _crash_recovery(self):
         """ Duh!
@@ -373,7 +375,7 @@ if __name__ == "__main__":
     # dispatcher.connect(logFunc, signal=SIG, sender=dispatcher.Any)
     riyadhNow = _correct_out_time(datetime.now())
     conf = {
-        'campaign': 'external',
+        'campaign': 'all',
         'arabic': "Blah blah blah",
         'english': "Hello, howr you",
         'repeat': 'Monthly',
@@ -386,7 +388,26 @@ if __name__ == "__main__":
         'id': 1,
         'action': 'Registered'
     }
-    wj = WatchJob(conf)
+    seg_conf = {
+        'campaign': 'segment',
+        'arabic': "Blah blah blah",
+        'english': "Hello, howr you",
+        'repeat': 'Once',
+        # 'hour': 1,
+        'hour': (riyadhNow + timedelta(minutes=1)).hour,
+        'minute': (riyadhNow + timedelta(minutes=1)).minute,
+        'oid': '5420ces5d013ddat510321cd',
+        'segment_data': {
+            'ref_id': 56,
+            'lower_limit': 0,
+            'upper_limit': 1000
+        },
+        'start_date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
+        'end_date': '12/1/2015',
+        'id': 59,
+        'action': 'Registered'
+    }
+    wj = WatchJob(seg_conf)
     print "First Run: ", wj.next_run().strftime("%a %d/%m/%Y %H:%M")
 
     while True:

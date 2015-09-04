@@ -22,16 +22,21 @@ csv object
 
 import watchjob
 
+
 def register(handler):
     watchjob.register(handler)
 
+
 external = {}
+
+
 def set_id_update(func):
-    external['update_id'] = func            # (id, index) -> {}
+    external['update_id'] = func  # (id, index) -> {}
 
 
 def set_action_update(func):
-    external['update_action'] = func        # (id, action) -> {}
+    external['update_action'] = func  # (id, action) -> {}
+
 
 _idSet = set([])
 _currentJobs = {}
@@ -40,7 +45,9 @@ _cid = 1
 
 """ Add a single Job
 Returns the id """
-def _addJob (conf):
+
+
+def _addJob(conf):
     print "Inside addJob"
     global _currentJobs
     global _newJobs
@@ -63,24 +70,27 @@ def _addJob (conf):
         # Validity for job, only if the case is repeat = 'once' else always valid
         return helper()
 
-    elif conf['action'].strip() == "" and conf['id'] in _currentJobs:   #_currentJobs.has_key(conf['id']):
-            print " c2. Cleared Action"
-            # restart job
-            _currentJobs[conf['id']].cancel_job()        # Cancel the job
-            return helper()
+    elif conf['action'].strip() == "" and conf['id'] in _currentJobs:  # _currentJobs.has_key(conf['id']):
+        print " c2. Cleared Action"
+        # restart job
+        _currentJobs[conf['id']].cancel_job()  # Cancel the job
+        return helper()
 
-    elif conf['id'] not in _currentJobs:   #not _currentJobs.has_key(conf['id']):           # Event of a crash
-            print " c3. App crash or tampering"
-            return helper()                     # Problematic
-    elif conf['id'] in _currentJobs:    #_currentJobs.has_key(conf['id']):               # same, transfere
-            print " c4. Action not cleared, same job, ignore: ", conf['id']
-            _newJobs[conf['id']] = _currentJobs.pop(conf['id'])
-            return None
-    else:   # Dont think we will reach this
-            print " c5. case FUCKED"
-            return None
+    elif conf['id'] not in _currentJobs:  # not _currentJobs.has_key(conf['id']):           # Event of a crash
+        print " c3. App crash or tampering"
+        return helper()  # Problematic
+    elif conf['id'] in _currentJobs:  # _currentJobs.has_key(conf['id']):               # same, transfere
+        print " c4. Action not cleared, same job, ignore: ", conf['id']
+        _newJobs[conf['id']] = _currentJobs.pop(conf['id'])
+        return None
+    else:  # Dont think we will reach this
+        print " c5. case FUCKED"
+        return None
+
 
 """ Actual method to use """
+
+
 def configure_jobs(csvlist):
     print " Configuring jobs"
     global _currentJobs
@@ -91,13 +101,14 @@ def configure_jobs(csvlist):
             if conf['ID'] != "":
                 _idSet.add(int(conf['ID']))
         for i, config in enumerate(csvlist):
-            conf = _data_map(config)
-            if conf['action'].lower() in ['done', 'processing', 'missed', 'bad link', 'cancel', 'data load failed']:
+            conf, valid = _data_map(config)
+            if conf['action'].lower() in ['done', 'processing', 'missed', 'bad link', 'cancel', 'data load failed'] or \
+                    not valid:
                 continue
-            res = _addJob (conf)
+            res = _addJob(conf)
             if res is not None:
 
-                oid = conf.get('oid') # For API notification
+                oid = conf.get('oid')  # For API notification
 
                 if res[1]:
                     external['update_id'](res[0], i, 'Registered', oid=oid)
@@ -112,7 +123,11 @@ def configure_jobs(csvlist):
         _currentJobs = {}
 
 
-def _data_map (conf):
+def is_data_empty(v):
+    return str(v).strip() in ['', '_']
+
+
+def _data_map(conf):
     res = {
         "repeat": conf['Repeat'],
         "campaign": conf['Campaign'],
@@ -126,12 +141,28 @@ def _data_map (conf):
         "data_link": conf.get('Data Link', '')
     }
     if conf.get('External Job', '') != '':
-        res['oid'] = conf['External Job']
-    if conf.get('End Date', '').strip() not in ['', '_']:
+        ext = conf['External Job']
+        if res['campaign'] == 'segment':
+            dt = [x.strip() for x in ext.split(',')]  # " OID, t_id, lower_limit, upper_limit
+            if len(dt) < 4 or any([is_data_empty(res[key]) for key in ['start_date', 'hour', 'minute']]):
+                return res, False
+            res['repeat'] = 'Once'
+            res['oid'] = dt[0]
+            try:
+                res['segment_data'] = {
+                    "ref_id": int(dt[1]),
+                    "lower_limit": int(dt[2]),
+                    "upper_limit": int(dt[3])
+                }
+            except:
+                return res, False
+        else:
+            res['oid'] = ext
+    if not is_data_empty(conf.get('End Date', '')):
         res['end_date'] = conf['End Date']
 
     for key in ['hour', 'minute']:
-        if res[key] == '' or res[key] == '_':
+        if is_data_empty(res[key]):
             res[key] = 0
         else:
             try:
@@ -143,7 +174,8 @@ def _data_map (conf):
     else:
         res['id'] = 0
 
-    return res
+    return res, True
+
 # ----------------- Tests ------------------ #
 _t1 = [
     {
@@ -173,38 +205,48 @@ _t1 = [
         "ID": ""
     },
 ]
+from watchjob import _correct_out_time
+from datetime import datetime, timedelta
+
+riyadhNow = _correct_out_time(datetime.now())
 _t2 = [
     {
-        "Campaign": "Test3",
-        "Start Date": "6/30/2015",
-        "Repeat": "Test",
-        "Hour": '1',
-        "Minute": '20',
-        "Arabic": "Blah blah",
-        "English": "Blu blue",
-        "Type": "SMS",
-
-        "Action": "Done",
-        "ID": "0"
+        'Campaign': 'segment',
+        'Arabic': "Blah blah blah",
+        'English': "Hello, howr you",
+        'Repeat': 'Once',
+        # 'hour': 1,
+        'Hour': (riyadhNow + timedelta(minutes=1)).hour,
+        'Minute': (riyadhNow + timedelta(minutes=1)).minute,
+        'External Job': '5420ces5d013ddat510321cd,56,0,1000',
+        'Start Date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
+        'End Date': '12/1/2015',
+        'ID': 59,
+        'Action': 'Registered'
     }
 ]
 
+
 def _logPrint(i, id, *args, **kwargs):
     print "updating ", i, id
-    print "Got arguments: "+str(args)
-    print "Got kwargs: "+str(kwargs)
+    print "Got arguments: " + str(args)
+    print "Got kwargs: " + str(kwargs)
+
 
 def test1():
     register(watchjob.logFunc)
     set_id_update(_logPrint)
     set_action_update(_logPrint)
-    configure_jobs (_t1)
+    configure_jobs(_t2)
+
 
 def test2():
-    configure_jobs (_t2)
+    configure_jobs(_t2)
+
 
 if __name__ == '__main__':
     from time import sleep
+
     test1()
     while True:
         sleep(1)
