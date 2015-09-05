@@ -104,7 +104,7 @@ def updateAux(id, col, data):
     if id in _cache and worksheet.acell(idAlpha+str(_cache[id])).value == str(id):
         cell_name = col + str(_cache[id])
         if worksheet.acell(cell_name).value != 'Cancel':
-            worksheet.update_acell(cell_name)
+            worksheet.update_acell(cell_name, str(data))
     else:
         val = worksheet.get_all_records()
         for x in val:
