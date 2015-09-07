@@ -253,10 +253,14 @@ class WatchJob(object):
         else:
             self.job = scheduler.add_job(self._emit, self.trigger)
             if 'end_date' in self.conf and self.conf['end_date'] != '' and create_cancel:
-                cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], "%m/%d/%Y")) \
-                              + timedelta(hours=23, minutes=58)
+                # cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], "%m/%d/%Y")).replace(
+                #     hour=23, minute=58
+                # )
 
-                # cancel_date = datetime.now() + timedelta(minutes=3)  # ONLY FOR TESTING
+                now = datetime.now()
+                cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], '%m/%d/%Y')).replace(
+                    hour=now.hour, minute=now.minute+5
+                )
 
                 print "Have an end_date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
 
@@ -357,7 +361,6 @@ import pprint
 pp = pprint.PrettyPrinter(indent=2)
 now = datetime.now()
 
-
 def logFunc(sender, event):
     # print("Event: " + str(event) + "  at " + str(datetime.now().strftime("%d/%m/%Y")))
     print "Got Event at: " + str(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
@@ -377,13 +380,13 @@ if __name__ == "__main__":
         'campaign': 'all',
         'arabic': "Blah blah blah",
         'english': "Hello, howr you",
-        'repeat': 'Monthly',
-        # 'hour': 1,
-        'hour': (riyadhNow).hour,
+        'repeat': 'Hourly',
+        'hour': 1,
+        # 'hour': (riyadhNow).hour,
         'minute': (riyadhNow + timedelta(minutes=1)).minute,
         'oid': '5420ces5d013ddat510321cd',
-        'start_date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
-        'end_date': '12/1/2015',
+        'start_date': riyadhNow.strftime("%m/%d/%Y"),
+        'end_date': riyadhNow.strftime("%m/%d/%Y"),
         'id': 1,
         'action': 'Registered'
     }
@@ -391,7 +394,7 @@ if __name__ == "__main__":
         'campaign': 'segment',
         'arabic': "Blah blah blah",
         'english': "Hello, howr you",
-        'repeat': 'Once',
+        'repeat': 'Hourly',
         # 'hour': 1,
         'hour': (riyadhNow + timedelta(minutes=1)).hour,
         'minute': (riyadhNow + timedelta(minutes=1)).minute,
@@ -406,7 +409,7 @@ if __name__ == "__main__":
         'id': 59,
         'action': 'Registered'
     }
-    wj = WatchJob(seg_conf)
+    wj = WatchJob(conf)
     print "First Run: ", wj.next_run().strftime("%a %d/%m/%Y %H:%M")
 
     while True:
