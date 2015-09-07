@@ -262,9 +262,6 @@ class WatchJob(object):
 
                 def finish():
                     self.cancel_job()
-                    if hasattr(self, 'data_download_job'):
-                        self.data_download_job.remove()
-
                     self.eventObj['action'] = "Done"
                     event = {
                         "type": "update_action",
@@ -336,6 +333,8 @@ class WatchJob(object):
         print "Remove called for campaign %s with id %i" % (self.conf['campaign'], self.conf['id'])
         if hasattr(self, 'job'):
             self.job.remove()
+        if hasattr(self, 'data_download_job'):
+            self.data_download_job.remove()
 
     def next_run(self):
         if hasattr(self, 'job'):
