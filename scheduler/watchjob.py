@@ -253,14 +253,14 @@ class WatchJob(object):
         else:
             self.job = scheduler.add_job(self._emit, self.trigger)
             if 'end_date' in self.conf and self.conf['end_date'] != '' and create_cancel:
-                # cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], "%m/%d/%Y")).replace(
-                #     hour=23, minute=58
-                # )
-
-                now = datetime.now()
-                cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], '%m/%d/%Y')).replace(
-                    hour=now.hour, minute=now.minute+5
+                cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], "%m/%d/%Y")).replace(
+                    hour=23, minute=58
                 )
+
+                # now = datetime.now()
+                # cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], '%m/%d/%Y')).replace(
+                #     hour=now.hour, minute=now.minute+5
+                # )
 
                 print "Have an end_date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
 
