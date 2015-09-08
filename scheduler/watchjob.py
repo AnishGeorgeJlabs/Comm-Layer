@@ -377,16 +377,16 @@ if __name__ == "__main__":
     # dispatcher.connect(logFunc, signal=SIG, sender=dispatcher.Any)
     riyadhNow = _correct_out_time(datetime.now())
     conf = {
-        'campaign': 'all',
-        'arabic': "Blah blah blah",
-        'english': "Hello, howr you",
-        'repeat': 'Hourly',
+        'campaign': 'external',
+        'arabic': "_",
+        'english': "_",
+        'repeat': 'No Send',
         'hour': 1,
         # 'hour': (riyadhNow).hour,
-        'minute': (riyadhNow + timedelta(minutes=1)).minute,
+        'minute': 1,
         'oid': '5420ces5d013ddat510321cd',
-        'start_date': riyadhNow.strftime("%m/%d/%Y"),
-        'end_date': riyadhNow.strftime("%m/%d/%Y"),
+        'start_date': "_",
+        'end_date': '',
         'id': 1,
         'action': 'Registered'
     }

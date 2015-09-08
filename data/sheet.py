@@ -6,7 +6,9 @@ from oauth2client import tools
 import gspread
 import requests
 from job_update_api import update_job_status
+from configuration import createLogger
 
+cLogger = createLogger("sheet")
 _cache = {}             # id against sheet row numbers
 
 def get_worksheet(i):
@@ -99,28 +101,35 @@ def updateAction(id, action, oid=None):
         update_job_status(oid, status=action)
 
 
-def updateAux(id, col, data):
-    worksheet = get_scheduler_sheet()
-    if id in _cache and worksheet.acell(idAlpha+str(_cache[id])).value == str(id):
-        cell_name = col + str(_cache[id])
-        if worksheet.acell(cell_name).value != 'Cancel':
-            worksheet.update_acell(cell_name, str(data))
-    else:
-        val = worksheet.get_all_records()
-        for x in val:
-            try:
-                if str(id) == str(x['ID']):         # Here this is the sheet based ID
-                    rowNum = val.index(x) + 2
+def updateAux(id, col, data, retry=True):
+    try:
+        worksheet = get_scheduler_sheet()
+        if id in _cache and worksheet.acell(idAlpha+str(_cache[id])).value == str(id):
+            cell_name = col + str(_cache[id])
+            if worksheet.acell(cell_name).value != 'Cancel':
+                worksheet.update_acell(cell_name, str(data))
+        else:
+            val = worksheet.get_all_records()
+            for x in val:
+                try:
+                    if str(id) == str(x['ID']):         # Here this is the sheet based ID
+                        rowNum = val.index(x) + 2
 
-                    _cache[id] = rowNum
+                        _cache[id] = rowNum
 
-                    cell = col + str(rowNum)
-                    print cell
-                    if x['Action'] != 'Cancel':
-                        worksheet.update_acell(cell, str(data))
-                    break
-            except Exception, e:
-                print "Some error came : "+str(e)
+                        cell = col + str(rowNum)
+                        print cell
+                        if x['Action'] != 'Cancel':
+                            worksheet.update_acell(cell, str(data))
+                        break
+                except Exception, e:
+                    print "Some error came : "+str(e)
+    except Exception, e:
+        if retry:
+            cLogger.exception("Update Aux error, trying again")
+            updateAux(id, col, data, False)
+        else:
+            cLogger.exception("Update Aux could work with the exception")
 
 
 def getFileLink(id):
