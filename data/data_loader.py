@@ -57,10 +57,13 @@ def get_external_data(event):
         id = event['id']
     else:
         id = event.get('segment_data', {}).get('ref_id', 0)
-        if id == 0:
-            return []
 
-    url = "http://jlabs.co/wadi/query_results/res_" + str(id) + ".csv"
+    if id != 0:
+        url = "http://jlabs.co/wadi/query_results/res_" + str(id) + ".csv"
+    else:
+        url = event.get('segment_data', {}).get('db_file', '')
+        if url == '':
+            return []
     print "Got url: " + url
     if url == '':
         return []

@@ -150,10 +150,13 @@ def _data_map(conf):
             res['oid'] = dt[0]
             try:
                 res['segment_data'] = {
-                    "ref_id": int(dt[1]),
                     "lower_limit": int(dt[2]),
                     "upper_limit": int(dt[3])
                 }
+                if dt[1].startwith('external_database'):
+                    res['db_file'] = dt[1].replace('external_database', '')
+                else:
+                    res['ref_id'] = int(dt[1])
             except:
                 return res, False
         else:
