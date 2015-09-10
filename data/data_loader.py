@@ -51,6 +51,19 @@ def clean_english(text):
 
 # ------------------------------------------------
 # -----------------Get Campaign Data---------------
+def limitted_csv(reader, lower=None, upper=None):
+    if lower is None:
+        for row in reader:
+            yield row
+    else:
+        i = 0
+        for row in reader:
+            if lower <= i < upper:
+                yield row
+            i += 1
+            if i >= upper:
+                break
+
 def get_external_data(event):
     """ Get the dataset from external csv file which was initially uploaded by the tool itself :param id: """
     if event['campaign'] == 'external':
@@ -67,21 +80,31 @@ def get_external_data(event):
     print "Got url: " + url
     if url == '':
         return []
-    r = requests.get(url)
+    r = requests.get(url, stream=True)
     if r.status_code == 200:
-        raw = filter(lambda k: len(k) > 0, r.text.split("\n"))[1:]
-        reader = csv.reader(raw)
-        data = [  # External file may have additional fields
-                  x[:3] for x in
-                  list(reader)
-                  ]
+        # raw = filter(lambda k: len(k) > 0, r.text.split("\n"))[1:]
+        # reader = csv.reader(raw)
+        # data = [  # External file may have additional fields
+        #           x[:3] for x in
+        #           list(reader)
+        #           ]
 
         if event['campaign'] == 'segment':
             lower_limit = event.get('segment_data', {}).get('lower_limit', 0)
-            upper_limit = event.get('segment_data', {}).get('upper_limit', len(data))
-            return data[lower_limit: upper_limit]
+            upper_limit = event.get('segment_data', {}).get('upper_limit', 100)
         else:
-            return data
+            lower_limit = None
+            upper_limit = None
+
+        data = [
+            x[:3] for x in
+            list(limitted_csv(
+                csv.reader(r.iter_lines()),
+                lower_limit, upper_limit
+            ))[1:]
+        ]
+        return data
+
     else:
         return []
 
