@@ -56,7 +56,8 @@ def limitted_csv(reader, lower=None, upper=None):
         for row in reader:
             yield row
     else:
-        i = 0
+        # The length of the csv is 1 more than actual, because of header
+        i = -1
         for row in reader:
             if lower <= i < upper:
                 yield row
