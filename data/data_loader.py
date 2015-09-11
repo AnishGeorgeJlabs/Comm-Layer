@@ -144,7 +144,7 @@ def getUserData(event):
     blocked_set = get_block_set()
     data = map(
         lambda k: [str(k[0]).strip('+ ').replace('-', '')] + list(k[1:]),
-        data
+        [x for x in data if len(x) >= 2]
     )
     data = [a for a in data if ','.join(a[0:2]) not in blocked_set]
     return data
