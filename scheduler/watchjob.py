@@ -53,55 +53,6 @@ class WatchJob(object):
     global _repeated_types
     global _done_action_types
 
-    '''
-    def __init__(self, conf):
-        self.conf = conf
-        self._create_event_obj()
-
-        if self.conf['campaign'].lower() in "external" and self.conf['repeat'] in ['No Send', 'Immediately']:
-            self.valid = True
-            self._emit_data_download()
-
-        if self.conf['repeat'] == 'No Send':
-            self.valid = True
-            return      # No further processing
-
-        elif self.conf['repeat'] == 'Immediately':
-            if self.conf['campaign'].lower() in 'external':  # TODO, its an ugly hack, needs to be changed
-                self.job = scheduler.add_job(self._emit, 'date', run_date=(datetime.now() + timedelta(minutes=1)))
-            else:
-                self._emit()
-            return      # No further processing
-
-        try:
-            self.fDate = _correct_in_time(
-                datetime.combine(
-                    datetime.strptime(self.conf['start_date'], '%m/%d/%Y'),
-                    time(self.conf['hour'], self.conf['minute'])
-                )
-            )
-        except:
-            self.fDate = _current_time()
-
-        # Short circuit if we missed our time
-        if self.conf['repeat'] == 'Once' and self.fDate <= _current_time():
-            self.valid = False
-            print "Missed one: ", self.fDate.strftime("%d/%m/%Y, %H:%M:%S")
-            print "Missed by: "+str(_current_time() - self.fDate)
-        elif self.conf['repeat'] == 'Immediately':
-            self.valid = True
-            self._emit()
-        else:
-            self.valid = True
-
-            self.sDate = self.fDate.replace(hour=0, minute=0, second=0)
-            print "time: ", self.fDate.time()
-
-            self._set_trigger()
-            if not self._crash_recovery():
-                self._set_delay_and_schedule_emit()
-    '''
-
     def __init__(self, conf):
         # Step 1: Configuration set
         self.conf = conf
@@ -252,16 +203,10 @@ class WatchJob(object):
                 self._emit()
         else:
             self.job = scheduler.add_job(self._emit, self.trigger)
-            if 'end_date' in self.conf and self.conf['end_date'] != '' and create_cancel:
+            if 'end_date' in self.conf and self.conf['end_date'].strip() != '' and create_cancel:
                 cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], "%m/%d/%Y")).replace(
                     hour=23, minute=58
                 )
-
-                # now = datetime.now()
-                # cancel_date = _correct_in_time(datetime.strptime(self.conf['end_date'], '%m/%d/%Y')).replace(
-                #     hour=now.hour, minute=now.minute+5
-                # )
-
                 print "Have an end_date: " + str(cancel_date.strftime("%d/%m/%Y %H:%M:%S"))
 
                 def finish():
@@ -328,7 +273,7 @@ class WatchJob(object):
                 print "MASSIVE LOOPI, returning from schedule data download"
                 return
 
-            if nx - _current_time() <= grace_period:  # In the rare crash case, nx can be negative
+            if nx > _current_time() and nx - _current_time() <= grace_period:
                 self._emit_data_download()
             else:
                 self.data_download_job = scheduler.add_job(self._emit_data_download, DateTrigger(nx - grace_period))
@@ -378,14 +323,16 @@ if __name__ == "__main__":
     riyadhNow = _correct_out_time(datetime.now())
     conf = {
         'campaign': 'external',
-        'arabic': "_",
-        'english': "_",
-        'repeat': 'No Send',
-        'hour': 1,
-        # 'hour': (riyadhNow).hour,
-        'minute': 1,
+        'arabic': "flash sale",
+        'english': "flash sale",
+        'repeat': 'Once',
+        # 'hour': 1,
+        'hour': (riyadhNow).hour,
+        # 'minute': 1,
+        'minute': (riyadhNow + timedelta(minutes=1)).minute,
         'oid': '5420ces5d013ddat510321cd',
-        'start_date': "_",
+        # 'start_date': "_",
+        'start_date': _correct_out_time(datetime.now()).strftime("%m/%d/%Y"),
         'end_date': '',
         'id': 1,
         'action': 'Registered'
