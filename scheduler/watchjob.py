@@ -138,6 +138,7 @@ class WatchJob(object):
                 )
             )
         except:
+            print "Couldnt figure out fDate correctly !!!!"
             self.fDate = _current_time()
 
         self.sDate = self.fDate.replace(hour=0, minute=0, second=0)
