@@ -242,9 +242,6 @@ class WatchJob(object):
         if self.conf['repeat'] not in ['Once', 'Immediately']:
             self._schedule_data_download()
 
-        # Scheduling for the next run
-        self._schedule_data_download()
-
         dispatcher.send(signal=SIG, event=event, sender=self)
 
     def _emit_data_download(self):
