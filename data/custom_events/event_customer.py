@@ -48,7 +48,7 @@ def get_customer(mode, language):
         where_clause = ''
 
     query = """
-    SELECT distinct cust.id_customer, phone.number, if(cust.fk_language=1, 'English', 'Arabic') as language, if(cust.fk_country=3, 'UAE', 'SA') as country
+    SELECT distinct cust.id_customer, phone.number, if(cust.fk_language=1, 'English', 'Arabic') as language, if(cust.fk_country=3, 'UAE', 'KSA') as country
     FROM customer cust INNER JOIN customer_phone phone
     ON phone.fk_customer = cust.id_customer
     %s
