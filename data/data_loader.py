@@ -66,7 +66,7 @@ def limitted_csv(reader, lower=None, upper=None):
                 break
 
 def get_external_data(event):
-    """ Get the dataset from external csv file which was initially uploaded by the tool itself :param id: """
+    """ Get the dataset from external csv file which was initially uploaded by the tool itself  """
     if event['campaign'] == 'external':
         id = event['id']
     else:
