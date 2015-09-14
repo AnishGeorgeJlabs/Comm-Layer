@@ -154,7 +154,7 @@ def _data_map(conf):
                     "upper_limit": int(dt[3])
                 }
                 if dt[1].startswith('external_database_'):
-                    res['db_file'] = dt[1].replace('external_database_', '')
+                    res['ext_db'] = dt[1].replace('external_config_', '')
                 else:
                     res['ref_id'] = int(dt[1])
             except Exception, e:

@@ -72,12 +72,16 @@ def get_external_data(event):
     else:
         id = event.get('segment_data', {}).get('ref_id', 0)
 
-    if id != 0:
+    if id != 0:     # For internal data, in csv
         url = "http://jlabs.co/wadi/query_results/res_" + str(id) + ".csv"
-    else:
-        url = event.get('segment_data', {}).get('db_file', '')
-        if url == '':
+        ext_flag = False
+    else:           # for external data, direct from api
+        config = event.get('segment_data', {}).get('ext_db', '')
+        if config == '':
             return []
+        else:
+            ext_flag = True
+            url = 'http://api.jlabs.co/wadi/external_data?'+config
     print "Got url: " + url
     if url == '':
         return []
@@ -90,22 +94,24 @@ def get_external_data(event):
         #           list(reader)
         #           ]
 
-        if event['campaign'] == 'segment':
-            lower_limit = event.get('segment_data', {}).get('lower_limit', 0)
-            upper_limit = event.get('segment_data', {}).get('upper_limit', 100)
+        if not ext_flag:
+            if event['campaign'] == 'segment':
+                lower_limit = event.get('segment_data', {}).get('lower_limit', 0)
+                upper_limit = event.get('segment_data', {}).get('upper_limit', 100)
+            else:
+                lower_limit = None
+                upper_limit = None
+
+            data = [
+                x[:3] for x in
+                list(limitted_csv(
+                    csv.reader(r.iter_lines()),
+                    lower_limit, upper_limit
+                ))[1:]
+            ]
         else:
-            lower_limit = None
-            upper_limit = None
-
-        data = [
-            x[:3] for x in
-            list(limitted_csv(
-                csv.reader(r.iter_lines()),
-                lower_limit, upper_limit
-            ))[1:]
-        ]
+            data = r.json().get('data', [])
         return data
-
     else:
         return []
 
