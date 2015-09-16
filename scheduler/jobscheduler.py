@@ -150,13 +150,15 @@ def _data_map(conf):
             res['oid'] = dt[0]
             try:
                 if dt[0].endswith('_segment'):
-                    res['ref_id'] = int(dt[1])
                     res['segment_data'] = {
                         "lower_limit": int(dt[2]),
-                        "upper_limit": int(dt[3])
+                        "upper_limit": int(dt[3]),
+                        'ref_id': int(dt[1])
                     }
                 elif dt[0].endswith('_esegment'):
-                    res['ext_db'] = dt[1]
+                    res['segment_data'] = {
+                        'ext_db': dt[1]
+                    }
                 else:
                     print "Returning False from _data_map:: Malformed data "
                     return res, False
