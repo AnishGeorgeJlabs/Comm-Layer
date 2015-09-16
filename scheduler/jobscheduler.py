@@ -144,19 +144,22 @@ def _data_map(conf):
         ext = conf['External Job']
         if res['campaign'] == 'segment':
             dt = [x.strip() for x in ext.split(',')]  # " OID, t_id, lower_limit, upper_limit
-            if len(dt) < 4 or any([is_data_empty(res[key]) for key in ['start_date', 'hour', 'minute']]):
+            if len(dt) < 2 or any([is_data_empty(res[key]) for key in ['start_date', 'hour', 'minute']]):
                 return res, False
             res['repeat'] = 'Once'
             res['oid'] = dt[0]
             try:
-                res['segment_data'] = {
-                    "lower_limit": int(dt[2]),
-                    "upper_limit": int(dt[3])
-                }
-                if dt[1].startswith('external_database_'):
-                    res['ext_db'] = dt[1].replace('external_config_', '')
-                else:
+                if dt[0].endswith('_segment'):
                     res['ref_id'] = int(dt[1])
+                    res['segment_data'] = {
+                        "lower_limit": int(dt[2]),
+                        "upper_limit": int(dt[3])
+                    }
+                elif dt[0].endswith('_esegment'):
+                    res['ext_db'] = dt[1]
+                else:
+                    print "Returning False from _data_map:: Malformed data "
+                    return res, False
             except Exception, e:
                 print "Returning False from _data_map:: "+str(e)
                 return res, False
