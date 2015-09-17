@@ -11,6 +11,7 @@ def operate(mode, options):
     """ Driver for get_month
     Implements the query_event_driver specification
 
+    updated on 17th september 2015 to support year against month
     :param mode:
     :param options:
     :return:
@@ -30,6 +31,6 @@ def get_month(mode, months):
     query = """
     SELECT fk_customer, created_at
     FROM sales_order
-    WHERE EXTRACT(MONTH FROM created_at) in (%s)""" % json.dumps(months).strip("[]")
+    WHERE EXTRACT(YEAR_MONTH FROM created_at) in ('%s')""" % "','".join(months)
 
     return aux.typical_event_routing(mode, query, ['Purchased at'])
