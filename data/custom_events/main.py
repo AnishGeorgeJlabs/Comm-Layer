@@ -10,6 +10,7 @@ import event_item_status
 import event_month
 import event_platform
 import event_channel
+import event_origination_month
 import aux
 from . import createLogger
 
@@ -23,6 +24,7 @@ drivers = {
     'repeat_buyer': event_repeat_buyer.operate,
     'item_status': event_item_status.operate,
     'purchase_month': event_month.operate,
+    'origination_month': event_origination_month.operate,
     'platform': event_platform.operate,
     'channel': event_channel.operate
 }
