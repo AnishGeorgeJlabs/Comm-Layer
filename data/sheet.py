@@ -7,16 +7,22 @@ import gspread
 import requests
 from job_update_api import update_job_status
 from configuration import createLogger
+import os
 
 cLogger = createLogger("sheet")
 _cache = {}             # id against sheet row numbers
 
+def local_file(name):
+    cdir = os.path.dirname(__file__)
+    filename = os.path.join(cdir, name)
+    return filename
+
 def get_worksheet(i):
-    storage = Storage("creds.dat")
+    storage = Storage(local_file("creds.data"))
     credentials = storage.get()
     if credentials is None or credentials.invalid:
         flags = tools.argparser.parse_args(args=[])
-        flow = flow_from_clientsecrets("client_secret.json", scope=["https://spreadsheets.google.com/feeds"])
+        flow = flow_from_clientsecrets(local_file("client_secret.json"), scope=["https://spreadsheets.google.com/feeds"])
         credentials = tools.run_flow(flow, storage, flags)
     if credentials.access_token_expired:
         credentials.refresh(httplib2.Http())
