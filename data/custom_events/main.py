@@ -83,20 +83,20 @@ def execute_pipeline(pipeline, options):
                 op_mode='or'
             )
             cid_set, data, headers = _execute_sub_pipe(
-                pipeline=pipeline.get('excluded', pipeline.get('not', [])),
-                cid_set=cid_set,
-                extra_data=data,
-                main_headers=headers,
-                options=options,
-                op_mode='not'
-            )
-            cid_set, data, headers = _execute_sub_pipe(
                 pipeline=pipeline.get('required', pipeline.get('and', [])),
                 cid_set=cid_set,
                 extra_data=data,
                 main_headers=headers,
                 options=options,
                 op_mode='and'
+            )
+            cid_set, data, headers = _execute_sub_pipe(
+                pipeline=pipeline.get('excluded', pipeline.get('not', [])),
+                cid_set=cid_set,
+                extra_data=data,
+                main_headers=headers,
+                options=options,
+                op_mode='not'
             )
 
         block_set = aux.get_block_set()
